@@ -42,45 +42,6 @@ const router = express.Router();
 //   }
 // });
 
-router.post('/analyze-github-url', async (req, res) => {
-  const { githubUrl, userId } = req.body;
-
-  const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
-  const match = githubUrl.match(pathRegex);
-  if (!match) {
-    return res.status(400).json({ error: "Invalid GitHub URL" });
-  }
-  const [, owner, repo] = match;
-
-  try {
-    let accessToken: string | null = null;
-
-    if (userId) {
-      const user = await User.findById(userId).exec();
-      accessToken = user ? user.accessToken : null;
-    }
-
-    const octokit = new Octokit({ auth: accessToken || process.env.GITHUB_PAT });
-
-    const repoDetails = await octokit.repos.get({ owner, repo });
-
-    if (repoDetails.data.private && !accessToken) {
-      return res.status(401).json({ message: "Repository is private. Please authenticate." });
-    }
-
-    const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
-    const analysisResult = await analyzeTextWithGPT(promptText);
-    res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error(error.message);
-      res.status(500).json({ error: error.message });
-    } else {
-      console.error('An unknown error occurred', error);
-      res.status(500).json({ error: "An unknown error occurred" });
-    }
-  }
-});
 
 
 export default router;
