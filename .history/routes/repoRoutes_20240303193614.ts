@@ -33,9 +33,7 @@ router.post('/analyze-github-url', async (req, res) => {
     // Analyze the repository with OpenAI
     const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
     const analysisResult = await analyzeTextWithGPT(promptText);
-    const plainTextResponse = analysisResult; // Assuming `analysisResult` is a string.
-    res.send({ plainTextResponse, repoDetails: repoDetails.data });
-    // res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
+    res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error processing your request." });
