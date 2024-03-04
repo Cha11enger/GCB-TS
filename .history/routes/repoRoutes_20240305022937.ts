@@ -28,7 +28,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
       if (!user) {
         return res.status(401).json({
           error: "Authentication required. Please authenticate via GitHub.",
-          authUrl: authRoutes.getGithubAuthUrl(), // Correctly call the function to get the URL string
+          authUrl: augetGithubAuthUrl(), // Correctly call the function to get the URL string
         });
       } else {
         const userOctokit = new Octokit({ auth: user.accessToken });

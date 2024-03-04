@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest";
 import User from '../models/User'; // Adjust this import based on your actual User model file path
 import { analyzeTextWithGPT } from '../config/openai-setup'; // Adjust this import as necessary
 import { Request, Response } from 'express';
-import authRoutes from './authRoutes'; // Ensure this is correctly imported
+import { authRoutes  from './authRoutes'; // Ensure this is correctly imported
 
 const analyzeGithubUrl = async (req: Request, res: Response) => {
   const { githubUrl } = req.body;
@@ -28,7 +28,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
       if (!user) {
         return res.status(401).json({
           error: "Authentication required. Please authenticate via GitHub.",
-          authUrl: authRoutes.getGithubAuthUrl(), // Correctly call the function to get the URL string
+          authUrl: getGithubAuthUrl(), // Correctly call the function to get the URL string
         });
       } else {
         const userOctokit = new Octokit({ auth: user.accessToken });

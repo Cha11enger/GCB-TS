@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest";
 import User from '../models/User'; // Adjust this import based on your actual User model file path
 import { analyzeTextWithGPT } from '../config/openai-setup'; // Adjust this import as necessary
 import { Request, Response } from 'express';
-import authRoutes from './authRoutes'; // Ensure this is correctly imported
+import getGithubAuthUrl from './authRoutes'; // Assuming you export this function from authRoutes
 
 const analyzeGithubUrl = async (req: Request, res: Response) => {
   const { githubUrl } = req.body;
@@ -23,14 +23,16 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
     const analysisResult = await analyzeTextWithGPT(promptText);
     res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
   } catch (error) {
-    if ((error as any).status === 404 || (error as any).status === 403) {
+    if ((error as { status: number }).status === 404 || (error as { status: number }).status === 403) {
       const user = await User.findOne({ username: owner }).exec();
       if (!user) {
+        // Instead of redirecting, provide the GitHub OAuth URL for the client to navigate
         return res.status(401).json({
           error: "Authentication required. Please authenticate via GitHub.",
-          authUrl: authRoutes.getGithubAuthUrl(), // Correctly call the function to get the URL string
+          authUrl: getGithubAuthUrl(),
         });
       } else {
+        // Retry with the user's access token
         const userOctokit = new Octokit({ auth: user.accessToken });
         try {
           const repoDetails = await userOctokit.repos.get({ owner, repo });

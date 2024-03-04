@@ -32,7 +32,7 @@ const githubCallback = async (req: Request, res: Response) => {
 const authRoutes = {
   github,
   githubCallback,
-  getGithubAuthUrl,
+  getGithubAuthUrl
 };
 
 export default authRoutes;

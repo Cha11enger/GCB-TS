@@ -1,0 +1,77 @@
+openapi: 3.0.0
+info:
+  title: GitHub Repository Analyzer
+  version: 1.0.0
+  description: This API handles GitHub repository analysis, including authenticating users and analyzing both public and
+    private repositories.
+servers:
+  - url: https://gcb-ts.onrender.com/api
+paths:
+  /auth/github:
+    get:
+      operationId: authenticateUser
+      summary: Initiates GitHub OAuth flow for user authentication.
+      responses:
+        "200":
+          description: Authentication successful
+        "302":
+          description: Redirection to GitHub for authentication
+        "401":
+          description: Authentication failed
+  /repo/analyze:
+    post:
+      operationId: analyzeGithubRepository
+      summary: Analyzes a specified GitHub repository URL and provides a summary.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                githubUrl:
+                  type: string
+                  description: The URL of the GitHub repository to analyze.
+                userId:
+                  type: string
+                  description: The user's ID, necessary for accessing private repositories. Optional for public repositories.
+              required:
+                - githubUrl
+      responses:
+        "200":
+          description: Repository analysis completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analysis:
+                    type: string
+                    description: The analysis summary of the GitHub repository.
+                  repoDetails:
+                    type: object
+                    description: Detailed information about the repository.
+        "400":
+          description: Bad request, such as an invalid GitHub URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized access to a private repository
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string

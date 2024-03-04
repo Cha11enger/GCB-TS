@@ -5,8 +5,8 @@ import passport from 'passport';
 // const router = express.Router();
 
 const getGithubAuthUrl = () => {
-  // Direct users to your endpoint that handles GitHub OAuth
-  return 'https://gcb-ts.onrender.com/api/auth/github';
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  return `https://github.com/login/oauth/authorize?client_id=${clientId}`;
 };
 
 // Initiates GitHub authentication process
@@ -32,7 +32,7 @@ const githubCallback = async (req: Request, res: Response) => {
 const authRoutes = {
   github,
   githubCallback,
-  getGithubAuthUrl,
+  getGithubAuthUrl
 };
 
 export default authRoutes;
