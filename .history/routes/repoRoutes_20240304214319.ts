@@ -23,30 +23,29 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
     
     // if repo is not equal to public check the owner's access token in db and use it to authenticate and analyze the repo and if owner's access token is not found redirect to github auth
     // if visibility not equal to public or repo not found 
-      if (visibility !== 'public' || !repoDetails.data) {
-        //check owner name in db and its access token
-        const user = await  User.findOne  ({ username: owner }).exec();
-        if (!user) {
-          // Redirect to GitHub OAuth flow if not authenticated
-          return res.redirect('/auth/github');
-        } else {
-          const octokit = new Octokit({ auth: user.accessToken });
-          const repoDetails = await octokit.repos.get({ owner, repo });
-          // if still not found return error as repo not found or this owner does not have access to this repo
-          if (!repoDetails.data) {
-            return res.status(404).json({ error: "Repository not found or you do not have access to this repository" });
-          } else {
-            const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
-            const analysisResult = await analyzeTextWithGPT(promptText);
-            res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
-          }
-        }
+    if (visibility !== 'public' !repoDetails) {
+    // if (visibility !== 'public') {
+    // if (visibility === 'private') {
+      //check owner name in db and its access token
+      const user = await  User.findOne  ({ username: owner }).exec();
+      if (!user) {
+        // Redirect to GitHub OAuth flow if not authenticated
+        return res.redirect('/auth/github');
       } else {
+        const octokit = new Octokit({ auth: user.accessToken });
+        const repoDetails = await octokit.repos.get({ owner, repo });
         const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
         const analysisResult = await analyzeTextWithGPT(promptText);
         res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
       }
-    } catch (error) {
+    }
+    // if repo is public analyze the repo
+    else {
+      const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
+      const analysisResult = await analyzeTextWithGPT(promptText);
+      res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
+    }
+  } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error checking repository visibility" });
   }
