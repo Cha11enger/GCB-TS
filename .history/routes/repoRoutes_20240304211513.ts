@@ -21,10 +21,8 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
     const repoDetails = await octokit.repos.get({ owner, repo });
     const visibility = repoDetails.data.private ? 'private' : 'public';
     
-    // if repo is not equal to public check the owner's access token in db and use it to authenticate and analyze the repo and if owner's access token is not found redirect to github auth
-    // if visibility not equal to public
-    if (visibility !== 'public') {
-    // if (visibility === 'private') {
+    // if repo is private check the owner's access token in db and use it to authenticate and analyze the repo and if owner's access token is not found redirect to github auth
+    if (visibility === 'private') {
       //check owner name in db and its access token
       const user = await  User.findOne  ({ username: owner }).exec();
       if (!user) {
