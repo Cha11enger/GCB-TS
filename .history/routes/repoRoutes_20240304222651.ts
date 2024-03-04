@@ -71,7 +71,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
     return res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
   } catch (error) {
     // Handle errors related to repository access
-    if ((error as any).status === 404 || (error as any).status === 403) {
+    if (error.status === 404 || error.status === 403) {
       // If the repository is not accessible, attempt to find the user and use their access token
       const user = await User.findOne({ username: owner }).exec();
       if (!user) {
