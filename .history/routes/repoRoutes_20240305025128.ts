@@ -7,9 +7,9 @@ import authRoutes from './authRoutes'; // Ensure this is correctly imported
 
 const analyzeGithubUrl = async (req: Request, res: Response) => {
   const { githubUrl } = req.body;
+
   const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
   const match = githubUrl.match(pathRegex);
-
   if (!match) {
     return res.status(400).json({ error: "Invalid GitHub URL" });
   }
@@ -24,27 +24,32 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
     res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
   } catch (error) {
     if ((error as any).status === 404 || (error as any).status === 403) {
-      // Attempt to find a user with a matching GitHub username in your database.
       const user = await User.findOne({ username: owner }).exec();
-      if (user && user.accessToken) {
-        // If a user with an access token is found, attempt to get repository details with the user's token.
+      if (!user) {
+        return res.status(401).json({
+          error: "Authentication required. Please authenticate via GitHub.",
+          authUrl: authRoutes.getGithubAuthUrl(), // Correctly call the function to get the URL string
+        });
+      } else {
         const userOctokit = new Octokit({ auth: user.accessToken });
         try {
           const repoDetails = await userOctokit.repos.get({ owner, repo });
           const promptText = `Analyze the GitHub repository "${owner}/${repo}" using the user's access token and provide a summary.`;
           const analysisResult = await analyzeTextWithGPT(promptText);
-          return res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
-        } catch (userError) {
-          // If still failing, it's likely a genuine 404/403 error, prompt for authentication.
+          res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
+        } catch (error) {
+          // Revised error handling logic
+          // Directly prompt for authentication if encountering a 404 or 403 error
+          if ((error as any).status === 404 || (error as any).status === 403) {
+            return res.status(401).json({
+              error: "Authentication required to access this repository. Please authenticate via GitHub.",
+              authUrl: authRoutes.getGithubAuthUrl(), // Ensure this method returns the direct URL for authentication
+            });
+          } else {
+            res.status(500).json({ error: "An unexpected error occurred." });
+          }
         }
       }
-      // Redirect all 404/403 errors to authentication as a fallback.
-      return res.status(401).json({
-        error: "Authentication required. Please authenticate via GitHub.",
-        authUrl: authRoutes.getGithubAuthUrl(), // Ensure this is correctly called to get the URL string
-      });
-    } else {
-      res.status(500).json({ error: "An unexpected error occurred." });
     }
   }
 };

@@ -6,7 +6,7 @@ import express from 'express';
 const router = express.Router();
 
 router.get('/auth/github', authRoutes.github); // Fixed code
-router.get('/auth/github/callback', authRoutes.githubCallback); // Fixed code
+router.post('/auth/github/callback', authRoutes.githubCallback); // Fixed code
 router.post('/repo/analyze', repoRoutes.analyzeGithubUrl);
 // router.get('/repo/private', repoRoutes.checkRepoVisibility);
 
