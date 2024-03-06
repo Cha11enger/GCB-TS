@@ -9,7 +9,7 @@ import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/ses
 
 const getGithubAuthUrl = () => {
   // Direct users to your endpoint that handles GitHub OAuth
-  return 'https://gcb-ts.onrender.com/api/auth/github';
+  // return 'https://gcb-ts.onrender.com/api/auth/github';
   // return 'https://gcb-ts.onrender.com/api/auth/github/callback'
 };
 
