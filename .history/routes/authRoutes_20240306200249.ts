@@ -1,8 +1,7 @@
 // routes\authRoutes.ts
 import { Request, Response } from 'express';
 import passport from 'passport';
-// import IUser from '../models/User';
-import User, { IUser } from '../models/User';
+import IUser from '../models/User';
 
 
 // const router = express.Router();
@@ -32,25 +31,18 @@ const github = async (req: Request, res: Response) => {
 // }
 
 const githubCallback = async (req: Request, res: Response) => {
-  passport.authenticate('github', (err: Error | null, user: IUser | false) => {
+  passport.authenticate('github', (err: any, user: typeof IUser & { accessToken?: string }, info: any) => {
     if (err || !user) {
-      console.error(err); // Optionally log the error
       return res.redirect('/auth/github');
     }
     req.login(user, (err) => {
       if (err) {
-        console.error(err); // Optionally log the error
         return res.redirect('/auth/github');
       }
-      // Ensure the user has an accessToken property
-      if ('accessToken' in user) {
-        req.session.accessToken = user.accessToken;
-        // Redirect to the analyze route with the repository information
-        return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(req.session.repoUrl || '')}`);
-      } else {
-        // Handle the case where the accessToken is not available
-        return res.redirect('/auth/github');
-      }
+      // Set the user's session info here
+      req.session.accessToken = user.accessToken;
+      // Redirect to the analyze route with the repository information
+      return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(req.session.repoUrl || '')}`);
     });
   })(req, res);
 };

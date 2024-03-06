@@ -52,6 +52,13 @@ import authRoutes from './authRoutes'; // Ensure this is correctly imported
 //   }
 // };
 
+
+import { Octokit } from "@octokit/rest";
+import User from '../models/User';
+import { analyzeTextWithGPT } from '../config/openai-setup';
+import { Request, Response } from 'express';
+import authRoutes from './authRoutes';
+
 const analyzeGithubUrl = async (req: Request, res: Response) => {
   const { githubUrl } = req.body;
   const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;

@@ -1,8 +1,7 @@
 // routes\authRoutes.ts
 import { Request, Response } from 'express';
 import passport from 'passport';
-// import IUser from '../models/User';
-import User, { IUser } from '../models/User';
+import IUser from '../models/User';
 
 
 // const router = express.Router();
@@ -32,25 +31,17 @@ const github = async (req: Request, res: Response) => {
 // }
 
 const githubCallback = async (req: Request, res: Response) => {
-  passport.authenticate('github', (err: Error | null, user: IUser | false) => {
+  passport.authenticate('github', (err: any, user: IUser | false, info) => {
     if (err || !user) {
-      console.error(err); // Optionally log the error
       return res.redirect('/auth/github');
     }
     req.login(user, (err) => {
       if (err) {
-        console.error(err); // Optionally log the error
         return res.redirect('/auth/github');
       }
-      // Ensure the user has an accessToken property
-      if ('accessToken' in user) {
-        req.session.accessToken = user.accessToken;
-        // Redirect to the analyze route with the repository information
-        return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(req.session.repoUrl || '')}`);
-      } else {
-        // Handle the case where the accessToken is not available
-        return res.redirect('/auth/github');
-      }
+      req.session.accessToken = user.accessToken; // Now TypeScript knows about accessToken on session
+      const repoUrl = req.session.repoUrl || '/'; // Fallback to home if no repo URL was set
+      return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(repoUrl)}`);
     });
   })(req, res);
 };

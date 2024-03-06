@@ -1,4 +1,4 @@
-// index.ts
+// i
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
@@ -24,12 +24,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(session({
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    // Add a session store here, such as connect-mongo for MongoDB
-  }));
+
 // Set up routes
 app.use('/api', router);
 // app.use(repoRoutes);

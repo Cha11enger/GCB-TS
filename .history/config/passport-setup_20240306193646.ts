@@ -19,7 +19,7 @@ passport.deserializeUser(async (id: string, done) => {
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID as string,
     clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    callbackURL: process.env.GITHUB_CALLBACK_URL as string
+    callbackURL: pro
   },
 async (accessToken: string, refreshToken: string, profile: any, done: Function) => {
     try {

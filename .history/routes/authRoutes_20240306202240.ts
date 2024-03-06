@@ -1,8 +1,7 @@
 // routes\authRoutes.ts
 import { Request, Response } from 'express';
 import passport from 'passport';
-// import IUser from '../models/User';
-import User, { IUser } from '../models/User';
+import IUser from '../models/User';
 
 
 // const router = express.Router();

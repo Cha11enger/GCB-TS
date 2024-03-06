@@ -42,15 +42,10 @@ const githubCallback = async (req: Request, res: Response) => {
         console.error(err); // Optionally log the error
         return res.redirect('/auth/github');
       }
-      // Ensure the user has an accessToken property
-      if ('accessToken' in user) {
-        req.session.accessToken = user.accessToken;
-        // Redirect to the analyze route with the repository information
-        return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(req.session.repoUrl || '')}`);
-      } else {
-        // Handle the case where the accessToken is not available
-        return res.redirect('/auth/github');
-      }
+      // Set the user's session info here, make sure to cast user to any to avoid TypeScript errors
+      req.session.accessToken = (user as any).accessToken;
+      // Redirect to the analyze route with the repository information
+      return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(req.session.repoUrl || '')}`);
     });
   })(req, res);
 };
