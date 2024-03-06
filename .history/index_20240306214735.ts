@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGO_URI!)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: 'mySecretKey', // Replace 'yourSecretKey' with a real secret key
+  secret: process.env.SESSION_SECRET, // Replace 'yourSecretKey' with a real secret key
   resave: false,
   saveUninitialized: false, // Change to true if you want to save session on every request
   cookie: { secure: true, maxAge: 1000 * 60 * 60 * 24 * 7 }, // For HTTPS set secure to true
