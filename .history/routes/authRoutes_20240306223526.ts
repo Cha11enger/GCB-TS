@@ -35,12 +35,12 @@ const githubCallback = async (req: Request, res: Response) => {
   passport.authenticate('github', (err: Error | null, user: IUser | false) => {
       if (err || !user) {
           console.error(err); // Optionally log the error
-          return res.redirect('/api/auth/github');
+          return res.redirect('/auth/github');
       }
       req.login(user, (err) => {
           if (err) {
               console.error(err); // Optionally log the error
-              return res.redirect('/api/auth/github');
+              return res.redirect('api//auth/github');
           }
           // Use utility function to set the accessToken
           setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
