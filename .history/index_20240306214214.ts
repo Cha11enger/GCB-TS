@@ -9,7 +9,6 @@ import router from './routes'; // Ensure this path is correct based on your proj
 import './config/passport-setup'; // Ensure this path is correct
 // import './types/custom.d.ts';
 // / <reference types="./types/custom.d.ts" />
-import MongoStore from 'connect-mongo';
 
 
 const app = express();

@@ -9,7 +9,6 @@ import router from './routes'; // Ensure this path is correct based on your proj
 import './config/passport-setup'; // Ensure this path is correct
 // import './types/custom.d.ts';
 // / <reference types="./types/custom.d.ts" />
-import MongoStore from 'connect-mongo';
 
 
 const app = express();
@@ -21,14 +20,13 @@ mongoose.connect(process.env.MONGO_URI!)
   .catch(err => console.error('MongoDB connection error:', err));
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: 'yourSecretKey', // Replace 'yourSecretKey' with a real secret key
   resave: false,
   saveUninitialized: false, // Change to true if you want to save session on every request
   cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 * 7 }, // For HTTPS set secure to true
   store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
+      mongoUrl: mongoUrl,
       collectionName: 'sessions'
   })
 }));
