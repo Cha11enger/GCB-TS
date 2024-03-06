@@ -9,7 +9,6 @@
     "outDir": "./dist",
     "rootDir": "./"
   },
-  // "include": ["*.ts", "types/**/*", "types/custom.d.ts"],
-  "include": ["*.ts", "./**/*.ts", "./types/*.d.ts", "types/**/*"],
+  "include": ["./**/*.ts", "./types/**/*.d.ts"],
   "exclude": ["node_modules", "**/*.spec.ts", "dist"]
 }

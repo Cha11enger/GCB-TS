@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import passport from 'passport';
 // import IUser from '../models/User';
-import User, { IUser } from '../models/User';
+// import User, { IUser } from '../models/User';
 import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
 
 // const router = express.Router();

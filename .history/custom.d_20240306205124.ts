@@ -5,6 +5,6 @@ import session from 'express-session';
 declare module 'express-session' {
   export interface SessionData {
     accessToken?: string;
-    repoUrl?: string;
+    githubUrl?: string;
   }
 }

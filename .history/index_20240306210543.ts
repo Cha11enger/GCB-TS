@@ -7,8 +7,9 @@ import session from 'express-session';
 import passport from 'passport';
 import router from './routes'; // Ensure this path is correct based on your project structure
 import './config/passport-setup'; // Ensure this path is correct
-// import './types/custom.d.ts';
-// / <reference types="./types/custom.d.ts" />
+import './path/to/custom.d.ts';
+
+/// <reference types="./types/custom.d.ts" />
 
 
 const app = express();
@@ -20,6 +21,11 @@ mongoose.connect(process.env.MONGO_URI!)
   .catch(err => console.error('MongoDB connection error:', err));
 
 app.use(express.json());
+app.use(session({
+    secret: process.env.SESSION_SECRET!,
+    resave: true,
+    saveUninitialized: true
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(session({

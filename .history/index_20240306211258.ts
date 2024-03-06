@@ -20,6 +20,11 @@ mongoose.connect(process.env.MONGO_URI!)
   .catch(err => console.error('MongoDB connection error:', err));
 
 app.use(express.json());
+// app.use(session({
+//     secret: process.env.SESSION_SECRET!,
+//     resave: true,
+//     saveUninitialized: true
+// }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(session({

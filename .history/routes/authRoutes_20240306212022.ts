@@ -2,8 +2,8 @@
 import { Request, Response } from 'express';
 import passport from 'passport';
 // import IUser from '../models/User';
-import User, { IUser } from '../models/User';
-import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
+// import User, { IUser } from '../models/User';
+
 
 // const router = express.Router();
 
@@ -33,24 +33,27 @@ const github = async (req: Request, res: Response) => {
 
 const githubCallback = async (req: Request, res: Response) => {
   passport.authenticate('github', (err: Error | null, user: IUser | false) => {
-      if (err || !user) {
-          console.error(err); // Optionally log the error
-          return res.redirect('/auth/github');
+    if (err || !user) {
+      console.error(err); // Optionally log the error
+      return res.redirect('/auth/github');
+    }
+    req.login(user, (err) => {
+      if (err) {
+        console.error(err); // Optionally log the error
+        return res.redirect('/auth/github');
       }
-      req.login(user, (err) => {
-          if (err) {
-              console.error(err); // Optionally log the error
-              return res.redirect('/auth/github');
-          }
-          // Use utility function to set the accessToken
-          setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
-          // Redirect to the analyze route with the repository information
-          const githubUrl = getCustomSessionProperty<string>(req.session, 'githubUrl') || '';
-          return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(githubUrl)}`);
-      });
+      // Ensure the user has an accessToken property
+      if ('accessToken' in user) {
+        req.session.accessToken = user.accessToken;
+        // Redirect to the analyze route with the repository information
+        return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(req.session.githubUrl || '')}`);
+      } else {
+        // Handle the case where the accessToken is not available
+        return res.redirect('/auth/github');
+      }
+    });
   })(req, res);
 };
-
 
     // GitHub callback route
     const authRoutes = {
