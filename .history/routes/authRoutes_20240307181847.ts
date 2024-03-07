@@ -8,7 +8,7 @@ import { NextFunction } from 'express';
 //import axios
 import axios from 'axios';
 //import setCustomSessionProperty and getCustomSessionProperty 
-import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
+
 
 dotenv.config();
 
@@ -85,9 +85,7 @@ export const handleGitHubCallback = (req: Request, res: Response, next: NextFunc
       if (err) { return next(err); }
       
       // Store user's accessToken in the session or database
-      setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
-      // Store user's GitHub URL in the session
-      setCustomSessionProperty(req.session, 'githubUrl', user.profileUrl);
+      (req.session as any).accessToken = user.accessToken;
 
       // Notify the GPT-3 interface that authentication was successful
       // This could be a redirect, a server-sent event, a WebSocket message, etc.

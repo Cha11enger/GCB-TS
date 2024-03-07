@@ -89,6 +89,8 @@ export const handleGitHubCallback = (req: Request, res: Response, next: NextFunc
       // Store user's GitHub URL in the session
       setCustomSessionProperty(req.session, 'githubUrl', user.profileUrl);
 
+        
+
       // Notify the GPT-3 interface that authentication was successful
       // This could be a redirect, a server-sent event, a WebSocket message, etc.
       res.status(200).json({ message: 'User authenticated successfully' });

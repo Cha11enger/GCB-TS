@@ -7,8 +7,6 @@ import dotenv from 'dotenv';
 import { NextFunction } from 'express';
 //import axios
 import axios from 'axios';
-//import setCustomSessionProperty and getCustomSessionProperty 
-import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
 
 dotenv.config();
 
@@ -64,33 +62,14 @@ router.use(passport.initialize());
 export const authenticateWithGitHub = passport.authenticate('github', { scope: ['user:email'] });
 
 // Function for handling the GitHub callback
-// export const handleGitHubCallback = (req: Request, res: Response, next: NextFunction) =>
-//   passport.authenticate('github', { failureRedirect: '/auth/github' }, (err: any, user: any, info: any) => {
-//     if (err) { return next(err); }
-//     if (!user) { return res.redirect('/auth/github'); }
-
-//     req.logIn(user, (err) => {
-//       if (err) { return next(err); }
-//       // After successful login, you can redirect or respond based on your application needs
-//       res.status(200).json({ message: 'User authenticated successfully' });
-//     });
-//   })(req, res, next);
-
 export const handleGitHubCallback = (req: Request, res: Response, next: NextFunction) =>
-  passport.authenticate('github', { failureRedirect: '/auth/github' }, (err: any, user: IUser, info: any) => {
+  passport.authenticate('github', { failureRedirect: '/auth/github' }, (err: any, user: any, info: any) => {
     if (err) { return next(err); }
     if (!user) { return res.redirect('/auth/github'); }
 
     req.logIn(user, (err) => {
       if (err) { return next(err); }
-      
-      // Store user's accessToken in the session or database
-      setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
-      // Store user's GitHub URL in the session
-      setCustomSessionProperty(req.session, 'githubUrl', user.profileUrl);
-
-      // Notify the GPT-3 interface that authentication was successful
-      // This could be a redirect, a server-sent event, a WebSocket message, etc.
+      // After successful login, you can redirect or respond based on your application needs
       res.status(200).json({ message: 'User authenticated successfully' });
     });
   })(req, res, next);

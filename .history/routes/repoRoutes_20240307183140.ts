@@ -73,8 +73,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
     return res.status(401).json({
       error: "Authentication required to access this repository. Please authenticate via GitHub.",
       authUrl: authRoutes.getGithubAuthUrl(),
-      // after the getGithubAuthUrl function called get the response from the authRoutes.ts file
-      // response: authRoutes.getGithubAuthUrl()
+      // after the 
     });
   }
 };

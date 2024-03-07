@@ -5,10 +5,10 @@ import express from 'express';
 
 const router = express.Router();
 
-router.get('/auth/github', authRoutes.authenticateWithGitHub);
-router.get('/auth/github/callback', authRoutes.handleGitHubCallback);
+router.get('/auth/github', authRoutes.authenticateWithGitHub); // Fixed code
+router.get('/auth/github/callback', authRoutes.handleGitHubCallback); // Fixed code
 router.get('/repo/analyze', repoRoutes.analyzeGithubUrl);
-router.post('/auth/github/token', authRoutes.exchangeGithubToken); // Fixed code
+router.post('/auth/github/token', exchangeGithubToken);
 
 
 // router.get('/repo/private', repoRoutes.checkRepoVisibility);
