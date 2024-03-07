@@ -91,12 +91,16 @@ export const handleGitHubCallback = (req: Request, res: Response, next: NextFunc
 
       // Notify the GPT-3 interface that authentication was successful
       // This could be a redirect, a server-sent event, a WebSocket message, etc.
+      // if user got authenticated successfully, redirect to the callback URL of chatbot interface
+      if (user) {
+        res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback');
+      }
       // res.status(200).json({ message: 'User authenticated successfully' });
       // // call the callback URL of chatbot interface
       // gptcallback(req, res, next);
 
       // res.redirect('/'); // Redirect to the callback URL of chatbot interface
-      res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback'); // Redirect to the callback URL of chatbot interface
+      // res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback'); // Redirect to the callback URL of chatbot interface
     });
   })(req, res, next);
 

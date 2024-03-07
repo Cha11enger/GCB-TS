@@ -96,7 +96,7 @@ export const handleGitHubCallback = (req: Request, res: Response, next: NextFunc
       // gptcallback(req, res, next);
 
       // res.redirect('/'); // Redirect to the callback URL of chatbot interface
-      res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback'); // Redirect to the callback URL of chatbot interface
+      // res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback'); // Redirect to the callback URL of chatbot interface
     });
   })(req, res, next);
 
