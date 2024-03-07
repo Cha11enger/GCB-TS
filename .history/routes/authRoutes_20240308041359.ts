@@ -101,13 +101,6 @@ export const handleGitHubCallback = (req: Request, res: Response, next: NextFunc
   })(req, res, next);
 
   // gpt callback
-  export const gptcallback = (req: Request, res: Response, next: NextFunction) => {
-    // Get the user's GitHub URL from the session
-    const githubUrl = getCustomSessionProperty<string>(req.session, 'githubUrl');
-    // Notify the GPT-3 interface that authentication was successful
-    // This could be a redirect, a server-sent event, a WebSocket message, etc.
-    res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback');
-  };
 
 export const getGithubAuthUrl = () => { 
   return process.env.GITHUB_AUTH_URL as string;
