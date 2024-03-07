@@ -43,7 +43,7 @@ async (accessToken: string, refreshToken: string, profile: any, done: Function) 
       }
       done(null, user);
     } catch (error) {
-      console.error("Error saving the user:", error);
+      onsole.error("Error saving the user:", error);
       done(error, null);
     }
   }

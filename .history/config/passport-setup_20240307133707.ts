@@ -34,16 +34,13 @@ async (accessToken: string, refreshToken: string, profile: any, done: Function) 
           avatarUrl: profile._json.avatar_url
         });
         await user.save();
-        console.log("New user created:", user);
       } else {
         // Optionally update the access token on each login
         user.accessToken = accessToken;
         await user.save();
-        console.log("User updated:", user);
       }
       done(null, user);
     } catch (error) {
-      console.error("Error saving the user:", error);
       done(error, null);
     }
   }

@@ -39,11 +39,9 @@ async (accessToken: string, refreshToken: string, profile: any, done: Function) 
         // Optionally update the access token on each login
         user.accessToken = accessToken;
         await user.save();
-        console.log("User updated:", user);
       }
       done(null, user);
     } catch (error) {
-      console.error("Error saving the user:", error);
       done(error, null);
     }
   }
