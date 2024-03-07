@@ -52,6 +52,7 @@ const githubCallback = async (req: Request, res: Response) => {
           // return res.redirect('/');
           // send success response
           return res.status(200).json({ message: 'User authenticated successfully' });
+          
 
       });
   })(req, res);

@@ -8,7 +8,8 @@ import authRoutes from './authRoutes'; // Ensure this is correctly imported
 const analyzeGithubUrl = async (req: Request, res: Response) => {
   const { githubUrl } = req.query;
   const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
-  const match = (githubUrl as string).match(pathRegex);
+  
+  // const match = githubUrl.match(pathRegex);
 
   if (!match) {
     return res.status(400).json({ error: "Invalid GitHub URL" });

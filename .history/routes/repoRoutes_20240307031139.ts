@@ -5,10 +5,11 @@ import { analyzeTextWithGPT } from '../config/openai-setup'; // Adjust this impo
 import { Request, Response } from 'express';
 import authRoutes from './authRoutes'; // Ensure this is correctly imported
 
+
 const analyzeGithubUrl = async (req: Request, res: Response) => {
-  const { githubUrl } = req.query;
+  const { githubUrl } = req.body;
   const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
-  const match = (githubUrl as string).match(pathRegex);
+  const match = githubUrl.match(pathRegex);
 
   if (!match) {
     return res.status(400).json({ error: "Invalid GitHub URL" });

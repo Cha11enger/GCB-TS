@@ -6,19 +6,7 @@ import { Request, Response } from 'express';
 import authRoutes from './authRoutes'; // Ensure this is correctly imported
 
 const analyzeGithubUrl = async (req: Request, res: Response) => {
-  const { githubUrl } = req.query;
-  const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
-  const match = (githubUrl as string).match(pathRegex);
-
-  if (!match) {
-    return res.status(400).json({ error: "Invalid GitHub URL" });
-  }
-
-  const [, owner, repo] = match;
-  let accessToken = process.env.GITHUB_PAT; // Default token
-
-  // Attempt to use a user-specific accessToken if available
-  const user = await User.findOne({ username: owner });
+  const githubUrl = req.query as unknown as string; // Convert to 'unknown' first before asserting as 'string'
   if (user && user.accessToken) {
     accessToken = user.accessToken;
   }

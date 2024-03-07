@@ -46,15 +46,10 @@ const githubCallback = async (req: Request, res: Response) => {
           // Use utility function to set the accessToken
           setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
           // Redirect to the analyze route with the repository information
-          // const githubUrl = getCustomSessionProperty<string>(req.session, 'githubUrl') || '';
-          // return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(githubUrl)}`);
-          // i want it to return back to the client with success response where the api is called from
-          // return res.redirect('/');
-          // send success response
-          return res.status(200).json({ message: 'User authenticated successfully' });
-
+          const githubUrl = getCustomSessionProperty<string>(req.session, 'githubUrl') || '';
+          return res.redirect(`/api/repo/analyze?githubUrl=${encodeURIComponent(githubUrl)}`);
       });
-  })(req, res);
+  })as passport.AuthenticateOptions) (req, res);
 };
 
 

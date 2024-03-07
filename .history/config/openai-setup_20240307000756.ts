@@ -19,24 +19,4 @@ const openai = new OpenAI({
 //   return responseContent.trim();
 // }
 
-async function analyzeTextWithGPT(promptText: string): Promise<string> {
-  let responseContent = "";
-  try {
-    const stream = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: promptText }],
-      stream: true,
-    });
-
-    for await (const chunk of stream) {
-      responseContent += chunk.choices[0]?.delta?.content || "";
-    }
-  } catch (error) {
-    console.error('Error calling OpenAI API:', error);
-    responseContent = "Error processing your request. Please try again.";
-  }
-
-  return responseContent.trim();
-}
-
 export { analyzeTextWithGPT };
