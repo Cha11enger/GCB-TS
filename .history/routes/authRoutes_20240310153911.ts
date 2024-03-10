@@ -75,7 +75,7 @@ export const authenticateWithGitHub = (req: Request, res: Response, next: NextFu
 // Function for handling the GitHub callback
 export const handleGitHubCallback = (req: Request, res: Response, next: NextFunction) => {
   const receivedState = req.query.state;
-  const expectedState = getCustomSessionProperty<string>(req.session, 'state');
+  const expectedState = getCustomSessionProperty<string>(req.session, 'State');
 
   if (!receivedState || receivedState !== expectedState) {
     return res.status(400).send('Invalid state parameter');

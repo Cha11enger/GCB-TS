@@ -68,19 +68,13 @@ router.use(passport.initialize());
 // export const authenticateWithGitHub = passport.authenticate('github', { scope: ['user:email'] });
 export const authenticateWithGitHub = (req: Request, res: Response, next: NextFunction) => {
   const state = crypto.randomBytes(16).toString('hex');
-  setCustomSessionProperty(req.session, 'state', state);
+  setCustomSessionProperty(req.session, 'oauthState', state);
   passport.authenticate('github', { scope: ['user:email'], state: state })(req, res, next);
 };
 
 // Function for handling the GitHub callback
-export const handleGitHubCallback = (req: Request, res: Response, next: NextFunction) => {
-  const receivedState = req.query.state;
-  const expectedState = getCustomSessionProperty<string>(req.session, 'state');
 
-  if (!receivedState || receivedState !== expectedState) {
-    return res.status(400).send('Invalid state parameter');
-  }
-
+export const handleGitHubCallback = (req: Request, res: Response, next: NextFunction) =>
   passport.authenticate('github', { failureRedirect: '/auth/github' }, (err: any, user: IUser, info: any) => {
     if (err) { return next(err); }
     if (!user) { return res.redirect('/auth/github'); }
@@ -88,13 +82,21 @@ export const handleGitHubCallback = (req: Request, res: Response, next: NextFunc
     req.logIn(user, (err) => {
       if (err) { return next(err); }
       
+      // Store user's accessToken in the session or database
       setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
+      // Store user's GitHub URL in the session
       setCustomSessionProperty(req.session, 'githubUrl', user.profileUrl);
-      
-      res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback');
+
+      // Notify the GPT-3 interface that authentication was successful
+      // This could be a redirect, a server-sent event, a WebSocket message, etc.
+      // res.status(200).json({ message: 'User authenticated successfully' });
+      // // call the callback URL of chatbot interface
+      // gptcallback(req, res, next);
+
+      // res.redirect('/'); // Redirect to the callback URL of chatbot interface
+      res.redirect('https://chat.openai.com/aip/g-01abc1339e19a0ba559ee408b09ef8fad06faa4e/oauth/callback'); // Redirect to the callback URL of chatbot interface
     });
   })(req, res, next);
-};
 
   // gpt callback
   export const gptcallback = (req: Request, res: Response, next: NextFunction) => {

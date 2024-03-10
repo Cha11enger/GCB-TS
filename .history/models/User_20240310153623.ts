@@ -8,7 +8,7 @@ export interface IUser extends Document {
   username: string;
   profileUrl: string;
   avatarUrl: string;
-  state?: string;
+  
 }
 
 const userSchema = new mongoose.Schema({
@@ -17,8 +17,7 @@ const userSchema = new mongoose.Schema({
   displayName: { type: String },
   username: { type: String },
   profileUrl: { type: String },
-  avatarUrl: { type: String },
-  state: { type: String } 
+  avatarUrl: { type: String }
 });
 
 const User = mongoose.model<IUser>('User', userSchema);

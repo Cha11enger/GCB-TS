@@ -68,14 +68,15 @@ router.use(passport.initialize());
 // export const authenticateWithGitHub = passport.authenticate('github', { scope: ['user:email'] });
 export const authenticateWithGitHub = (req: Request, res: Response, next: NextFunction) => {
   const state = crypto.randomBytes(16).toString('hex');
-  setCustomSessionProperty(req.session, 'state', state);
+  
+  // setCustomSessionProperty(req.session, 'oauthState', state);
   passport.authenticate('github', { scope: ['user:email'], state: state })(req, res, next);
 };
 
 // Function for handling the GitHub callback
 export const handleGitHubCallback = (req: Request, res: Response, next: NextFunction) => {
   const receivedState = req.query.state;
-  const expectedState = getCustomSessionProperty<string>(req.session, 'state');
+  const expectedState = getCustomSessionProperty<string>(req.session, 'oauthState' as keyof CustomSession);
 
   if (!receivedState || receivedState !== expectedState) {
     return res.status(400).send('Invalid state parameter');
@@ -95,6 +96,7 @@ export const handleGitHubCallback = (req: Request, res: Response, next: NextFunc
     });
   })(req, res, next);
 };
+
 
   // gpt callback
   export const gptcallback = (req: Request, res: Response, next: NextFunction) => {

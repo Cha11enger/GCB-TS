@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String },
   profileUrl: { type: String },
   avatarUrl: { type: String },
-  state: { type: String } 
+  state: { type: String } // Add the type for the 'state' property
 });
 
 const User = mongoose.model<IUser>('User', userSchema);

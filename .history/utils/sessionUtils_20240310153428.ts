@@ -6,7 +6,7 @@ import { Session } from "express-session";
 interface CustomSession extends Session {
     accessToken?: string;
     githubUrl?: string;
-    state?: string;
+    st
 }
 
 // Utility function to set custom session properties safely

@@ -17,8 +17,7 @@ const userSchema = new mongoose.Schema({
   displayName: { type: String },
   username: { type: String },
   profileUrl: { type: String },
-  avatarUrl: { type: String },
-  state: { type: String } 
+  avatarUrl: { type: String }
 });
 
 const User = mongoose.model<IUser>('User', userSchema);
