@@ -47,14 +47,17 @@ passport.use(new GitHubStrategy({
     }
 }));
 
-passport.serializeUser((user: any, done) => { 
-    done(null, user.id); 
-});
+// passport.serializeUser((user: IUser, done) => { 
+//     done(null, user.id); // This should no longer throw an error
+//   });
 
-passport.deserializeUser((id: any, done) => {
-    User.findById(id, (err: Error, user: any) => { // Explicitly specify the type of 'user' parameter as 'any'
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id); // This correctly infers IUser
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
 });
 
 router.get('/github', (req, res) => {

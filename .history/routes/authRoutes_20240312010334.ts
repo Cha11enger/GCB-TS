@@ -1,14 +1,11 @@
-// routes/authRoutes.ts
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
 import fetch from 'node-fetch';
-import User, { IUser } from '../models/User';
-// import User from '../models/User'; // Make sure this imports correctly
+import User from '../models/User';
 
 const router = express.Router();
 
-// This is a custom type that extends the GitHub profile with the _json property
 interface ExtendedGitHubProfile extends Profile {
   _json: {
     login: string;
@@ -21,40 +18,43 @@ passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID as string,
     clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback"
-}, async (accessToken: string, refreshToken: string, profile: ExtendedGitHubProfile, done: (error: any, user?: any | false) => void) => {
+}, async (accessToken: string, refreshToken: string, profile: Profile, done) => {
+    const githubProfile = profile as ExtendedGitHubProfile;
     try {
-        // Attempt to find the user by their GitHub ID
         let user = await User.findOne({ githubId: profile.id });
         if (!user) {
-            // If no user is found, create a new user
+            // If the user doesn't exist, create a new user
             user = new User({
                 githubId: profile.id,
                 accessToken,
-                displayName: profile.displayName || profile._json.login,
-                username: profile._json.login,
-                profileUrl: profile._json.html_url,
-                avatarUrl: profile._json.avatar_url,
+                displayName: profile.displayName || githubProfile._json.login, // Fallback to login if displayName is not available
+                username: githubProfile._json.login,
+                profileUrl: githubProfile._json.html_url,
+                avatarUrl: githubProfile._json.avatar_url,
             });
         } else {
-            // If the user exists, update their access token
+            // If the user exists, update the accessToken
             user.accessToken = accessToken;
         }
         const savedUser = await user.save();
-        done(null, savedUser); // Successfully return the saved/updated user
+        done(null, savedUser); // Proceed with the saved/updated user
     } catch (error) {
         console.error('Error during user saving/updating:', error);
         done(error);
     }
 }));
 
-passport.serializeUser((user: any, done) => { 
-    done(null, user.id); 
+passport.serializeUser((user: User, done) => {
+    done(null, user._id);
 });
 
-passport.deserializeUser((id: any, done) => {
-    User.findById(id, (err: Error, user: any) => { // Explicitly specify the type of 'user' parameter as 'any'
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
 });
 
 router.get('/github', (req, res) => {

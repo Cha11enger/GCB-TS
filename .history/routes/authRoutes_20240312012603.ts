@@ -52,7 +52,7 @@ passport.serializeUser((user: any, done) => {
 });
 
 passport.deserializeUser((id: any, done) => {
-    User.findById(id, (err: Error, user: any) => { // Explicitly specify the type of 'user' parameter as 'any'
+    User.findById(id, (err, user) => {
         done(err, user);
     });
 });

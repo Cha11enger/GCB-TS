@@ -2,7 +2,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 // Extend the Document to ensure type safety for user document properties
-// import { Document } from 'mongoose';
+import { Document } from 'mongoose';
 
 export interface IUser extends Document {
   githubId: string;

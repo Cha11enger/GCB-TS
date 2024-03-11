@@ -1,14 +1,11 @@
-// routes/authRoutes.ts
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
 import fetch from 'node-fetch';
-import User, { IUser } from '../models/User';
-// import User from '../models/User'; // Make sure this imports correctly
+import User from '../models/User'; // Make sure this imports correctly
 
 const router = express.Router();
 
-// This is a custom type that extends the GitHub profile with the _json property
 interface ExtendedGitHubProfile extends Profile {
   _json: {
     login: string;
@@ -47,14 +44,17 @@ passport.use(new GitHubStrategy({
     }
 }));
 
-passport.serializeUser((user: any, done) => { 
-    done(null, user.id); 
+passport.serializeUser<any>((user, done) => {
+  done(null, user._id); // Use _id here for MongoDB's default ID
 });
 
-passport.deserializeUser((id: any, done) => {
-    User.findById(id, (err: Error, user: any) => { // Explicitly specify the type of 'user' parameter as 'any'
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id); // This correctly infers IUser
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 router.get('/github', (req, res) => {
