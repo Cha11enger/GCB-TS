@@ -27,21 +27,17 @@ mongoose.connect(process.env.MONGO_URI!)
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const sessionConfig = {
-  secret: process.env.SESSION_SECRET || 'default_session_secret', // You should use an environment variable here.
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
-  },
+app.use(session({
+  secret: 'mySecretKey', // Ensure you have a strong secret key
+  resave: true,
+  saveUninitialized: true,
+  // cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 },
+  cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 7 },
   store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URI,
-    collectionName: 'sessions'
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: 'sessions'
   })
-};
-
-app.use(session(sessionConfig));
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());

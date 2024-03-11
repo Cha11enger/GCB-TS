@@ -94,23 +94,6 @@ router.get('/github', (req, res) => {
 //         }
 // });
 
-router.get('/github/callback', 
-  passport.authenticate('github', { failureRedirect: '/api/auth/github' }), 
-  (req, res) => {
-    // Successful authentication
-    const { code, state } = req.query;
-    const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
-    
-    if (req.user) {
-      console.log('User authenticated:', req.user);
-      // Redirect to OpenAI with the code and state, or any other desired action
-      res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
-    } else {
-      console.log('Authentication failed, redirecting to error.');
-      res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-    }
-});
-
 router.post('/github/token', async (req, res) => {
         const { code } = req.body;
         const response = await fetch('https://github.com/login/oauth/access_token', {
