@@ -41,7 +41,6 @@ passport.use(new GitHubStrategy({
         }
         console.log('Saving user:', user);
         const savedUser = await user.save();
-        console.log('User saved:', savedUser);
         done(null, savedUser); // Successfully return the saved/updated user
     } catch (error) {
         console.error('Error during user saving/updating:', error);
