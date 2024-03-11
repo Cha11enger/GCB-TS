@@ -42,34 +42,6 @@ passport.use(new GitHubStrategy({
         //     await newUser.save();
         //     cb(null, newUser);
         // }
-        if (user) {
-            user.accessToken = accessToken;
-            user.save((err, savedUser) => {
-                if (err) {
-                    console.error('Error saving existing user:', err);
-                    return cb(err);
-                }
-                console.log('Existing user updated:', savedUser);
-                cb(null, savedUser);
-            });
-        } else {
-            const newUser = new User({
-                githubId: profile.id,
-                accessToken,
-                displayName: profile.displayName,
-                username: githubProfile._json.login,
-                profileUrl: githubProfile._json.html_url,
-                avatarUrl: githubProfile._json.avatar_url,
-            });
-            newUser.save((err, savedUser) => {
-                if (err) {
-                    console.error('Error saving new user:', err);
-                    return cb(err);
-                }
-                console.log('New user created:', savedUser);
-                cb(null, savedUser);
-            });
-        }
     } catch (error) {
         cb(error);
     }
