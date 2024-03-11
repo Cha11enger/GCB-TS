@@ -1,4 +1,3 @@
-// routes/authRoutes.ts
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy, Profile } from 'passport-github2';

@@ -1,4 +1,4 @@
-// models/User.ts
+// 
 import mongoose, { Schema, Document } from 'mongoose';
 
 // Extend the Document to ensure type safety for user document properties

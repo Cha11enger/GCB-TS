@@ -1,5 +1,5 @@
 //routes/repoRoutes.ts
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { Octokit } from "@octokit/rest";
 import { analyzeTextWithGPT } from '../config/openai-setup';
 import User from '../models/User';

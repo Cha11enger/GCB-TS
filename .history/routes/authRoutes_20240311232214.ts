@@ -1,4 +1,3 @@
-// routes/authRoutes.ts
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
@@ -48,17 +47,17 @@ passport.use(new GitHubStrategy({
 }));
 
 passport.serializeUser((user: any, cb: (err: any, id?: any) => void) => {
-  cb(null, user.id);
+    cb(null, user.id);
 });
 
 passport.deserializeUser((id: string, cb: (err: any, user?: any) => void) => {
-  User.findById(id, (err: any, user: IUser | null) => cb(err, user));
+    User.findById(id, (err, user: IUser | null) => cb(err, user));
 });
 
 router.get('/github', (req, res) => {
-  const { state } = req.query;
-  const authorizationURL = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent("https://gcb-ts.onrender.com/api/auth/github/callback")}&scope=repo user:email&state=${state}`;
-  res.redirect(authorizationURL);
+    const { state } = req.query;
+    const authorizationURL = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent("https://gcb-ts.onrender.com/api/auth/github/callback")}&scope=repo user:email&state=${state}`;
+    res.redirect(authorizationURL);
 });
 
 router.get('/github/callback', (req, res) => {

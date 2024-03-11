@@ -1,64 +1,64 @@
-// routes/authRoutes.ts
 import express from 'express';
 import passport from 'passport';
 import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
 import fetch from 'node-fetch';
-import User, { IUser } from '../models/User'; // Ensure IUser is correctly exported
+import User, { IUser } from '../models/User'; // Adjust import if necessary to match your file structure
 
 const router = express.Router();
 
-// Extend the Profile interface to include the properties used in the GitHub strategy callback
-interface ExtendedGitHubProfile extends Profile {
-  _json: {
+// Define a custom type for the GitHub profile data we expect to use
+interface GitHubProfileData {
     login: string;
     html_url: string;
     avatar_url: string;
-  };
 }
 
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID as string,
     clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback"
-}, async (accessToken: string, refreshToken: string, profile: Profile, cb: (error: any, user?: any) => void) => {
-    // Cast profile to ExtendedGitHubProfile to access the _json property
-    const githubProfile = profile as ExtendedGitHubProfile;
-    
+}, async (accessToken: string, refreshToken: string, profile: Profile, done) => {
+    // Attempt to extract the extended data
+    const githubData: GitHubProfileData = profile._json;
+
     try {
         let user = await User.findOne({ githubId: profile.id });
         if (user) {
             user.accessToken = accessToken;
             await user.save();
-            cb(null, user);
+            done(null, user);
         } else {
             const newUser = new User({
                 githubId: profile.id,
-                accessToken,
+                accessToken: accessToken,
                 displayName: profile.displayName,
-                username: githubProfile._json.login,
-                profileUrl: githubProfile._json.html_url,
-                avatarUrl: githubProfile._json.avatar_url,
+                username: githubData.login, // Use 'login' from GitHub's _json
+                profileUrl: githubData.html_url, // Use 'html_url' from GitHub's _json
+                avatarUrl: githubData.avatar_url, // Use 'avatar_url' from GitHub's _json
             });
             await newUser.save();
-            cb(null, newUser);
+            done(null, newUser);
         }
     } catch (error) {
-        cb(error);
+        console.error('Error during GitHub auth:', error);
+        done(error);
     }
 }));
 
-passport.serializeUser((user: any, cb: (err: any, id?: any) => void) => {
-  cb(null, user.id);
+passport.serializeUser((user: IUser, done) => {
+    done(null, user.id);
 });
 
-passport.deserializeUser((id: string, cb: (err: any, user?: any) => void) => {
-  User.findById(id, (err: any, user: IUser | null) => cb(err, user));
+passport.deserializeUser((id, done) => {
+    User.findById(id, (err, user) => {
+        done(err, user);
+    });
 });
 
 router.get('/github', (req, res) => {
-  const { state } = req.query;
-  const authorizationURL = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent("https://gcb-ts.onrender.com/api/auth/github/callback")}&scope=repo user:email&state=${state}`;
-  res.redirect(authorizationURL);
+    const { state } = req.query;
+    const authorizationURL = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent("https://gcb-ts.onrender.com/api/auth/github/callback")}&scope=repo user:email&state=${state}`;
+    res.redirect(authorizationURL);
 });
 
 router.get('/github/callback', (req, res) => {

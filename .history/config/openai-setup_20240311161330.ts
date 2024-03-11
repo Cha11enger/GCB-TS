@@ -1,4 +1,3 @@
-// config/openai-setup.ts
 import OpenAI from 'openai';
 
 const openai = new OpenAI({

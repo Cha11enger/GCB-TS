@@ -1,18 +1,15 @@
 //routes/repoRoutes.ts
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { Octokit } from "@octokit/rest";
 import { analyzeTextWithGPT } from '../config/openai-setup';
 import User from '../models/User';
 import { getGithubAuthUrl } from '../utils/authHelpers'; // Ensure this utility function is implemented
-// import router from '.';
-
+import router from '.';
 
 // Define an interface for GitHub API errors, as they typically have a status code.
 interface GitHubApiError extends Error {
   status?: number;
 }
-
-const router = express.Router(); 
 
 const analyzeGithubUrl = async (req: Request, res: Response) => {
   const { githubUrl } = req.body;
@@ -72,6 +69,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
   }
 };
 
-router.post('/analyze', analyzeGithubUrl); // This line should now work without issue
+// router.post('/analyze-github-url', analyzeGithubUrl);
+router.post('/analyzegithub-url', analyzeGithubUrl);
 
-export default router;
+export default analyzeGithubUrl;
