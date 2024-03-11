@@ -44,14 +44,14 @@ passport.use(new GitHubStrategy({
         // }
         if (user) {
             user.accessToken = accessToken;
-            try {
-                const savedUser = await user.save();
+            user.save((err, savedUser) => {
+                if (err) {
+                    console.error('Error saving existing user:', err);
+                    return cb(err);
+                }
                 console.log('Existing user updated:', savedUser);
                 cb(null, savedUser);
-            } catch (err) {
-                console.error('Error saving existing user:', err);
-                cb(err);
-            }
+            });
         } else {
             const newUser = new User({
                 githubId: profile.id,
@@ -61,14 +61,14 @@ passport.use(new GitHubStrategy({
                 profileUrl: githubProfile._json.html_url,
                 avatarUrl: githubProfile._json.avatar_url,
             });
-            try {
-                const savedUser = await newUser.save();
+            newUser.save((err: Error | null, savedUser: IUser | null) => {
+                if (err) {
+                    console.error('Error saving new user:', err);
+                    return cb(err);
+                }
                 console.log('New user created:', savedUser);
                 cb(null, savedUser);
-            } catch (err) {
-                console.error('Error saving new user:', err);
-                cb(err);
-            }
+            });
         }
     } catch (error) {
         cb(error);
