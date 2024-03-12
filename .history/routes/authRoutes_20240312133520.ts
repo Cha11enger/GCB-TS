@@ -168,88 +168,32 @@ router.get('/github/callback',
 //     }
 // });
 
-// router.post('/github/token', async (req, res) => {
-//         const { code } = req.body;
-//         const response = await fetch('https://github.com/login/oauth/access_token', {
-//                 method: 'POST',
-//                 headers: {
-//                         'Accept': 'application/json',
-//                         'Content-Type': 'application/json',
-//                 },
-//                 body: JSON.stringify({
-//                         client_id: process.env.GITHUB_CLIENT_ID,
-//                         client_secret: process.env.GITHUB_CLIENT_SECRET,
-//                         code,
-//                         redirect_uri: "https://gcb-ts.onrender.com/api/auth/github/callback",
-//                 }),
-//         });
-//         const data = await response.json();
-//         if (data.access_token) {
-//                 console.log('Exchanged token successfully:', data.access_token);
-//                 // get access token from the session 
-//                 const accessToken = getCustomSessionProperty<string>(req.session, 'accessToken');
-//                 const user = await  User.findOne    ({ accessToken: accessToken }); // Find the user by their access token
-//                 if (!user) {
-//                     console.log('User not found');
-//                     res.status(400).json({ error: 'User not found.' });
-//                     return;
-//                 }
-//                 // Update the user's access token
-//                 user.accessToken = data.access_token;
-//                 await user.save();
-//                 console.log('User access token updated:', user);
-//                 res.json({ access_token: data.access_token });
-//         } else {
-//                 console.log('Failed to exchange token');
-//                 res.status(400).json({ error: 'Failed to exchange token.' });
-//         }
-// });
-
 router.post('/github/token', async (req, res) => {
-    const { code } = req.body;
-    try {
+        const { code } = req.body;
         const response = await fetch('https://github.com/login/oauth/access_token', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                client_id: process.env.GITHUB_CLIENT_ID,
-                client_secret: process.env.GITHUB_CLIENT_SECRET,
-                code,
-                redirect_uri: process.env.GITHUB_CALLBACK_URL,
-            }),
+                method: 'POST',
+                headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                        client_id: process.env.GITHUB_CLIENT_ID,
+                        client_secret: process.env.GITHUB_CLIENT_SECRET,
+                        code,
+                        redirect_uri: "https://gcb-ts.onrender.com/api/auth/github/callback",
+                }),
         });
-
         const data = await response.json();
-
         if (data.access_token) {
-            console.log('Exchanged token successfully:', data.access_token);
-
-            const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-            const user = await User.findOne({ githubId: githubId });
-
-            if (!user) {
-                console.error('User not found for the provided GitHub ID.');
-                res.status(404).json({ error: 'User not found.' });
-                return;
-            }
-
-            user.accessToken = data.access_token;
-            await user.save();
-            console.log('User access token updated successfully.', user);
-
-            res.json({ access_token: data.access_token });
+                console.log('Exchanged token successfully:', data.access_token);
+                // get access token from the session 
+                const accessToken = getCustomSessionProperty<string>(req.session, 'accessToken');
+                const user = await  User.findOne    ({ accessToken: accessToken });
+                res.json({ access_token: data.access_token });
         } else {
-            console.error('Failed to exchange token', data);
-            res.status(400).json({ error: 'Failed to exchange token.', details: data });
+                console.log('Failed to exchange token');
+                res.status(400).json({ error: 'Failed to exchange token.' });
         }
-    } catch (error) {
-        console.error('Error during token exchange process:', error);
-        res.status(500).json({ error: 'Internal server error during token exchange.', details: error });
-    }
 });
-
 
 export default router;

@@ -227,26 +227,31 @@ router.post('/github/token', async (req, res) => {
         if (data.access_token) {
             console.log('Exchanged token successfully:', data.access_token);
 
-            const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-            const user = await User.findOne({ githubId: githubId });
+            // Ideally, at this point, you should have some way of identifying the user
+            // that initiated this token exchange process, typically through a session.
+            // Let's assume you have a userID stored in session when the user was directed
+            // to GitHub for OAuth.
+            const userId = getCustomSessionProperty<string>(req.session, 'githubId');
+            const user = await User.findById(userId);
 
             if (!user) {
-                console.error('User not found for the provided GitHub ID.');
-                res.status(404).json({ error: 'User not found.' });
+                console.log('User not found with the given session userID.');
+                res.status(400).json({ error: 'User not found.' });
                 return;
             }
 
+            // Update the user's access token
             user.accessToken = data.access_token;
             await user.save();
-            console.log('User access token updated successfully.', user);
+            console.log('User access token updated:', user);
 
             res.json({ access_token: data.access_token });
         } else {
-            console.error('Failed to exchange token', data);
+            console.log('Failed to exchange token', data);
             res.status(400).json({ error: 'Failed to exchange token.', details: data });
         }
     } catch (error) {
-        console.error('Error during token exchange process:', error);
+        console.error('Error during token exchange:', error);
         res.status(500).json({ error: 'Internal server error during token exchange.', details: error });
     }
 });
