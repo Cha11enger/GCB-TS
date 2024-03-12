@@ -88,7 +88,7 @@ router.get('/github/callback', passport.authenticate('github', { failureRedirect
   } else {
     console.error('Authentication failed or session is not available.');
     // res.redirect('/api/auth/github');
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+//         res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
 
   }
 });
