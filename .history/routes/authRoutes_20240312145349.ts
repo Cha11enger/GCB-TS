@@ -79,34 +79,34 @@ passport.use(new GitHubStrategy({
           accessToken,
           displayName: profile.displayName,
           username: profile.username, // Make sure username is correctly mapped
-          profileUrl: profile.profileUrl, // Adjust if necessary
+          profileUrl: profile.profileUrl, // This might need to be profile._json.html_url
           avatarUrl: profile._json.avatar_url,
         });
       } else {
-        // Update the access token for the existing user
+        // Update the access token for existing user
         user.accessToken = accessToken;
       }
 
-      await user.save().then((savedUser) => {
+      user.save().then((savedUser) => {
         req.login(savedUser, (err) => {
           if (err) {
             console.error('Error during login:', err);
             return done(err);
           }
-          // Store GitHub ID and access token in the session
+          // Store GitHub ID and access token in session
           setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
           setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
           console.log('User authenticated and session updated:', savedUser);
           done(null, savedUser); // Pass the user to the next middleware
-        });
-      });
+        }
+        );
+        })
     } catch (error) {
       console.error('Error in GitHub strategy:', error);
       done(error, false);
     }
   }
 ));
-
 
 
 passport.serializeUser((user: any, done) => { 

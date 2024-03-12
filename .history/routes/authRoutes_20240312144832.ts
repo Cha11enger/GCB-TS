@@ -79,34 +79,26 @@ passport.use(new GitHubStrategy({
           accessToken,
           displayName: profile.displayName,
           username: profile.username, // Make sure username is correctly mapped
-          profileUrl: profile.profileUrl, // Adjust if necessary
+          profileUrl: profile.profileUrl, // This might need to be profile._json.html_url
           avatarUrl: profile._json.avatar_url,
         });
       } else {
-        // Update the access token for the existing user
+        // Update the access token for existing user
         user.accessToken = accessToken;
       }
 
-      await user.save().then((savedUser) => {
-        req.login(savedUser, (err) => {
-          if (err) {
-            console.error('Error during login:', err);
-            return done(err);
-          }
-          // Store GitHub ID and access token in the session
-          setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
-          setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
-          console.log('User authenticated and session updated:', savedUser);
-          done(null, savedUser); // Pass the user to the next middleware
-        });
-      });
+      await user.save();
+      
+      
+
+
+      done(null, user); // Pass the user to the next middleware
     } catch (error) {
       console.error('Error in GitHub strategy:', error);
       done(error, false);
     }
   }
 ));
-
 
 
 passport.serializeUser((user: any, done) => { 
@@ -220,9 +212,9 @@ router.get('/github/callback',
 // });
 
 // This endpoint handles the exchange of the authorization code for an access token
-// In /github/token endpoint
 router.post('/github/token', async (req, res) => {
     const { code } = req.body;
+    // Retrieve the GitHub ID from the session
     const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
 
     if (!githubId) {
@@ -270,7 +262,6 @@ router.post('/github/token', async (req, res) => {
         res.status(500).json({ error: 'Internal server error during token exchange.', details: error });
     }
 });
-
 
 
 
