@@ -154,9 +154,8 @@ router.get('/github/callback',
     if (req.user) {
         console.log('User authenticated:', req.user);
         const successState = 'success';
-        // Redirect to OpenAI with the code and the success state and continue for analysis the repo with analyzeGithubUrl api
-        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${successState}`);       
-        // res.redirect(`${openaiCallbackUrl}?code=${code}&state=${successState}`);
+        // Redirect to OpenAI with the code and the success state
+        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${successState}`);
     } else {
         console.log('Authentication failed, redirecting to error.');
         res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=failure`); // Set state to 'failure' on error

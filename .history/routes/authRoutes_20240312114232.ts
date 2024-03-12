@@ -90,7 +90,7 @@ passport.use(new GitHubStrategy({
       await user.save();
       
       // Optional: Use req to set custom session properties if needed
-        setCustomSessionProperty(req.session, 'accessToken', accessToken);
+      setCustomSessionProperty(req.session, 'customProperty', 'value');
 
       done(null, user); // Pass the user to the next middleware
     } catch (error) {
@@ -122,44 +122,36 @@ router.get('/github', (req, res) => {
     res.redirect(authorizationURL);
 });
 
-// router.get('/github/callback', 
-//   passport.authenticate('github', { failureRedirect: '/api/auth/github' }), 
-//   (req, res) => {
-//     // Successful authentication
-//     const { code, state } = req.query;
-//     const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
+// router.get('/github/callback', (req, res) => {
+//         const { code, state } = req.query;
+//         const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
 
-//     if (req.user) {
-//         const user: IUser = req.user as IUser; // Cast req.user to IUser type
-//         // session management
-//         setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
-//         console.log('User authenticated:', req.user);
-//         const successState = 'success';
-//         // Redirect to OpenAI with the code and state, or any other desired action
-//         // res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
-//         res.redirect(`${openaiCallbackUrl}?code=${req.query.code}&state=${successState}`);
-//     } else {
-//         console.log('Authentication failed, redirecting to error.');
-//         res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-//     }
+//         if (code) {
+//                 console.log('Redirecting to OpenAI callback URL with code:', code);
+//                 res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+//         } else {
+//                 console.log('Redirecting to OpenAI callback URL with error');
+//                 res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+//         }
 // });
 
 router.get('/github/callback', 
   passport.authenticate('github', { failureRedirect: '/api/auth/github' }), 
   (req, res) => {
     // Successful authentication
-    const { code } = req.query; // state is not needed here since we are setting it below
+    const { code, state } = req.query;
     const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
 
     if (req.user) {
+        const user: IUser = req.user as IUser; // Cast req.user to IUser type
+        // session management
+        setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
         console.log('User authenticated:', req.user);
-        const successState = 'success';
-        // Redirect to OpenAI with the code and the success state and continue for analysis the repo with analyzeGithubUrl api
-        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${successState}`);       
-        // res.redirect(`${openaiCallbackUrl}?code=${code}&state=${successState}`);
+        // Redirect to OpenAI with the code and state, or any other desired action
+        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
     } else {
         console.log('Authentication failed, redirecting to error.');
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=failure`); // Set state to 'failure' on error
+        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
     }
 });
 
