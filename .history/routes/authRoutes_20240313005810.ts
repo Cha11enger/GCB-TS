@@ -121,7 +121,7 @@ router.get('/github/callback',
                   // console.log('Session saved successfully', savedUser.githubId);
                   // console githubid
                   // console.log(`successfully saved session ${githubId}`);
-                  console.log('session got saved:', githubId);
+                  console.log('githubId:', githubId);
           }
       });
         // Ensure casting to the correct type

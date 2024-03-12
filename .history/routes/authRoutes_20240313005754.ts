@@ -118,10 +118,10 @@ router.get('/github/callback',
           } else {
                   // get the session 
                   const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-                  // console.log('Session saved successfully', savedUser.githubId);
+                  console.log('Session saved successfully', savedUser.githubId);
                   // console githubid
                   // console.log(`successfully saved session ${githubId}`);
-                  console.log('session got saved:', githubId);
+                  console.log('githubId:', githubId);
           }
       });
         // Ensure casting to the correct type
