@@ -14,7 +14,7 @@ passport.use(new GitHubStrategy({
   callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
   passReqToCallback: true
 },
-  async (req: express.Request, accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
+  async (req: express.Request, accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
     try {
       let user: IUser | null = await User.findOne({ githubId: profile.id });
       if (!user) {
@@ -29,16 +29,21 @@ passport.use(new GitHubStrategy({
       } else {
         user.accessToken = accessToken;
       }
-      await user.save();
-      // Set session properties and save session explicitly
-      setCustomSessionProperty(req.session, 'githubId', user.githubId);
-      setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
-      req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
-          return done(err);
-        }
-        done(null, user);
+
+      const savedUser = await user.save();
+      req.login(savedUser, (err) => {
+        if (err) { console.error('Login error:', err); return done(err); }
+        // Session property setting
+        setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
+        setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
+        done(null, savedUser);
+        req.session.save(err => {
+          if(err) {
+            console.error('Session save error:', err);
+          } else {
+            console.log('Session saved successfully');
+          }
+        });
       });
     } catch (error) {
       console.error('GitHub strategy error:', error);
@@ -60,6 +65,7 @@ passport.deserializeUser(async (id, done) => {
 });
 
 router.get('/github', (req, res) => {
+  // Generate and redirect to GitHub auth URL
   const state = req.query.state as string;
   const authorizationURL = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(process.env.GITHUB_CLIENT_ID as string)}&redirect_uri=${encodeURIComponent(process.env.GITHUB_CALLBACK_URL as string)}&scope=repo user:email&state=${encodeURIComponent(state)}`;
   res.redirect(authorizationURL);
@@ -67,14 +73,33 @@ router.get('/github', (req, res) => {
 
 router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/api/auth/github' }), (req, res) => {
   const { code, state } = req.query;
-  // Ensure session is saved before redirecting
-  req.session.save((err) => {
-    if (err) {
-      console.error('Session save error after GitHub callback:', err);
-      return res.status(500).send('Failed to save session.');
-    }
-    res.redirect(`${process.env.OPENAI_CALLBACK_URL}?code=${code}&state=${state}`);
-  });
+  if (req.user && req.session) {
+    const user = req.user; // Your user object after successful authentication
+    setCustomSessionProperty(req.session, 'githubId', user.githubId);
+    setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
+    // Explicitly save the session to ensure changes are written before redirecting
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error after GitHub callback:', err);
+        res.status(500).json({ message: 'Failed to save session.' });
+      } else {
+        console.log(`Session saved successfully. GitHub ID: ${user.githubId}`);
+        res.redirect(`${process.env.OPENAI_CALLBACK_URL}?code=${code}&state=${state}`);
+      }
+    });
+  } else {
+    console.error('Authentication failed or session is not available.');
+    res.redirect('/api/auth/github');
+  }
+});
+
+
+router.get('/githubid', (req, res) => {
+  const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
+  if (!githubId) {
+    return res.status(404).send('GitHub ID not found in session.');
+  }
+  res.send(`GitHub ID in session: ${githubId}`);
 });
 
 router.post('/github/token', async (req, res) => {
@@ -114,7 +139,6 @@ router.post('/github/token', async (req, res) => {
       user.accessToken = data.access_token;
       await user.save();
       console.log('Access token updated for user:', user.githubId);
-      // Respond with the actual access token obtained from GitHub
       res.json({ access_token: data.access_token });
     } else {
       console.error('Failed to exchange token:', data);
@@ -125,6 +149,5 @@ router.post('/github/token', async (req, res) => {
     res.status(500).json({ error: 'Internal server error during token exchange.', details: error });
   }
 });
-
 
 export default router;

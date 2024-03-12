@@ -1,4 +1,3 @@
-// utils/sessionUtils.ts
 import { Session } from "express-session";
 
 export function setCustomSessionProperty(session: Session & { [key: string]: any }, key: string, value: any): void {

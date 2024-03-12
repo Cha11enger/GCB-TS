@@ -114,7 +114,6 @@ router.post('/github/token', async (req, res) => {
       user.accessToken = data.access_token;
       await user.save();
       console.log('Access token updated for user:', user.githubId);
-      // Respond with the actual access token obtained from GitHub
       res.json({ access_token: data.access_token });
     } else {
       console.error('Failed to exchange token:', data);
@@ -124,7 +123,7 @@ router.post('/github/token', async (req, res) => {
     console.error('Error during token exchange process:', error);
     res.status(500).json({ error: 'Internal server error during token exchange.', details: error });
   }
+  
 });
-
 
 export default router;
