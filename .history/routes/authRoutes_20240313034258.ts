@@ -67,12 +67,28 @@ router.get('/github', (req, res) => {
 
 router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/api/auth/github' }), (req, res) => {
   const { code, state } = req.query;
-  const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
-  if (code && state) {
-    res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+    const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
+
+  if (req.user && req.session) {
+    const user = req.user as IUser; // Cast req.user to IUser type
+    // setCustomSessionProperty(req.session, 'githubId', user.githubId);
+    // setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
+    // // Explicitly save the session to ensure changes are written before redirecting
+    // req.session.save((err) => {
+    //   if (err) {
+    //     console.error('Session save error after GitHub callback:', err);
+    //     res.status(500).json({ message: 'Failed to save session.' });
+    //   } else {
+    //     console.log(`Session saved successfully. GitHub ID: ${user.githubId}`);
+    //     // res.redirect(`${process.env.OPENAI_CALLBACK_URL}?code=${code}&state=${state}`);
+    //     res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+
+    //   }
+    // });
   } else {
     console.error('Authentication failed or session is not available.');
-    res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+    // res.redirect('/api/auth/github');
+        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
   }
 });
 

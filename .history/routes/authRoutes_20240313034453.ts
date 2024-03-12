@@ -67,7 +67,6 @@ router.get('/github', (req, res) => {
 
 router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/api/auth/github' }), (req, res) => {
   const { code, state } = req.query;
-  const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
   if (code && state) {
     res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
   } else {
