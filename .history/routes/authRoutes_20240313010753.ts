@@ -14,38 +14,38 @@ passport.use(new GitHubStrategy({
   callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
   passReqToCallback: true
 },
-  async (req, accessToken, refreshToken, profile, done) => {
-    try {
-      let user = await User.findOne({ githubId: profile.id });
-      if (!user) {
-        user = new User({
-          githubId: profile.id,
-          accessToken,
-          displayName: profile.displayName,
-          username: profile.username,
-          profileUrl: profile._json.html_url,
-          avatarUrl: profile._json.avatar_url,
-        });
-      } else {
-        user.accessToken = accessToken;
-      }
-
-      const savedUser = await user.save();
-      req.login(savedUser, (err) => {
-        if (err) { console.error('Login error:', err); return done(err); }
-        // Session property setting
-        setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
-        setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
-        done(null, savedUser);
+async (req, accessToken, refreshToken, profile, done) => {
+  try {
+    let user = await User.findOne({ githubId: profile.id });
+    if (!user) {
+      user = new User({
+        githubId: profile.id,
+        accessToken,
+        displayName: profile.displayName,
+        username: profile.username,
+        profileUrl: profile._json.html_url,
+        avatarUrl: profile._json.avatar_url,
       });
-    } catch (error) {
-      console.error('GitHub strategy error:', error);
-      done(error);
+    } else {
+      user.accessToken = accessToken;
     }
-  }));
 
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+    const savedUser = await user.save();
+    req.login(savedUser, (err) => {
+      if (err) { console.error('Login error:', err); return done(err); }
+      // Session property setting
+      setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
+      setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
+      done(null, savedUser);
+    });
+  } catch (error) {
+    console.error('GitHub strategy error:', error);
+    done(error);
+  }
+}));
+
+passport.serializeUser((user: any, done) => { 
+  done(null, user.id); 
 });
 
 passport.deserializeUser(async (id, done) => {
@@ -64,14 +64,14 @@ router.get('/github', (req, res) => {
   res.redirect(authorizationURL);
 });
 
-router.get('/github/callback',
-  passport.authenticate('github', { failureRedirect: '/api/auth/github' }),
+router.get('/github/callback', 
+  passport.authenticate('github', { failureRedirect: '/api/auth/github' }), 
   (req, res) => {
     // After successful authentication
     const { code, state } = req.query;
     // Redirect to the specified callback URL with the authorization code and state
     res.redirect(`${process.env.OPENAI_CALLBACK_URL}?code=${code}&state=${state}`);
-  });
+});
 
 router.get('/githubid', (req, res) => {
   const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
@@ -88,45 +88,43 @@ router.post('/github/token', async (req, res) => {
     return res.status(400).send('GitHub ID missing from session.');
   }
 
-  try {
+  /try {
     // Find the user associated with the GitHub ID
     const user = await User.findOne({ githubId });
     if (!user) {
-      console.error('User not found for GitHub ID:', githubId);
-      return res.status(404).json({ error: 'User not found.' });
+        console.error('User not found for GitHub ID:', githubId);
+        return res.status(404).json({ error: 'User not found.' });
     }
 
     // Proceed with the token exchange process
     const response = await fetch('https://github.com/login/oauth/access_token', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
-        code,
-        redirect_uri: process.env.GITHUB_CALLBACK_URL,
-      }),
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            client_id: process.env.GITHUB_CLIENT_ID,
+            client_secret: process.env.GITHUB_CLIENT_SECRET,
+            code,
+            redirect_uri: process.env.GITHUB_CALLBACK_URL,
+        }),
     });
 
     const data = await response.json();
 
     if (data.access_token) {
-      // Update the user's access token in the database
-      user.accessToken = data.access_token;
-      await user.save();
-      console.log('Access token updated for user:', user.githubId);
-      res.json({ access_token: data.access_token });
+        // Update the user's access token in the database
+        user.accessToken = data.access_token;
+        await user.save();
+        console.log('Access token updated for user:', user.githubId);
+        res.json({ access_token: data.access_token });
     } else {
-      console.error('Failed to exchange token:', data);
-      res.status(400).json({ error: 'Failed to exchange token.', details: data });
+        console.error('Failed to exchange token:', data);
+        res.status(400).json({ error: 'Failed to exchange token.', details: data });
     }
-  } catch (error) {
+} catch (error) {
     console.error('Error during token exchange process:', error);
     res.status(500).json({ error: 'Internal server error during token exchange.', details: error });
-  }
+}
 });
-
-export default router;
