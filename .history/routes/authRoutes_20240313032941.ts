@@ -94,9 +94,11 @@ router.get('/github/callback', passport.authenticate('github', { failureRedirect
 
 // function to exchange token
 router.post('/github/token', async (req, res) => {
-  const { code} = req.body;
+  const { code , state} = req.body;
   // no need githubId just exchange the token
 
+  // get 
+  
   const response = await fetch('https://github.com/login/oauth/access_token', { 
     method: 'POST',
     headers: {

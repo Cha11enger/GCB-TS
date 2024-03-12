@@ -94,31 +94,18 @@ router.get('/github/callback', passport.authenticate('github', { failureRedirect
 
 // function to exchange token
 router.post('/github/token', async (req, res) => {
-  const { code} = req.body;
-  // no need githubId just exchange the token
+  const { code } = req.body;
 
-  const response = await fetch('https://github.com/login/oauth/access_token', { 
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      client_id: process.env.GITHUB_CLIENT_ID,
-      client_secret: process.env.GITHUB_CLIENT_SECRET,
-      code,
-      redirect_uri: process.env.GITHUB_CALLBACK_URL,
-    }),
-  });
-  const data = await response.json();
-  if (data.access_token) {
-    res.json({ access_token: data.access_token });
-  } else {
-    res.status(400).json({ error: 'Failed to exchange token.', details: data });
-  }
-}
-);
+  try {
+    // Find the user associated with the GitHub ID
+    const user = await User.findOne({ githubId });
+    if (!user) {
+      console.error('User not found for GitHub ID:', githubId);
+      return res.status(404).json({ error: 'User not found.' });
+    }
 
+    // Proceed with the token exchange process
+    const response = await fetch('
 
 // router.post('/github/token', async (req, res) => {
 //   const { code } = req.body;
