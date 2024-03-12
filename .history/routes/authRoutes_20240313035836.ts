@@ -2,33 +2,44 @@
 import express from 'express';
 import passport from 'passport';
 const GitHubStrategy = require('passport-github2').Strategy;
+import fetch from 'node-fetch';
 import User, { IUser } from '../models/User';
+import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
 
 const router = express.Router();
 
 passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  clientID: process.env.GITHUB_CLIENT_ID as string,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
   callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
+  passReqToCallback: true
 },
-async (_accessToken, _refreshToken, profile, done) => {
+async (req: express.Request, accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
   try {
-    let user = await User.findOne({ githubId: profile.id });
+    let user: IUser | null = await User.findOne({ githubId: profile.id });
     if (!user) {
       user = new User({
         githubId: profile.id,
-        accessToken: _accessToken, // Assuming the accessToken provided by the strategy is the one we want to save.
+        accessToken,
         displayName: profile.displayName,
         username: profile.username,
-        profileUrl: profile.profileUrl, // Make sure this is the correct path for the profile URL
-        avatarUrl: profile.photos[0].value, // Assuming the first photo is the avatar.
+        profileUrl: profile._json.html_url,
+        avatarUrl: profile._json.avatar_url,
       });
     } else {
-      // If the user exists, update their accessToken.
-      user.accessToken = _accessToken;
+      user.accessToken = accessToken;
     }
-    const savedUser = await user.save();
-    done(null, savedUser);
+    await user.save();
+    setCustomSessionProperty(req.session, 'githubId', user.githubId);
+    setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        done(err);
+      } else {
+        done(null, user);
+      }
+    });
   } catch (error) {
     console.error('GitHub strategy error:', error);
     done(error);
@@ -39,10 +50,10 @@ passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(async (id: any, done) => {
+passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
-    done(null, user as IUser); // Assuming IUser is your user interface
+    done(null, user);
   } catch (error) {
     done(error, null);
   }

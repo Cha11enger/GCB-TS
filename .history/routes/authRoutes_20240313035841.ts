@@ -35,14 +35,14 @@ async (_accessToken, _refreshToken, profile, done) => {
   }
 }));
 
-passport.serializeUser((user: any, done) => {
+passport.serializeUser((user: IUser, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(async (id: any, done) => {
+passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
-    done(null, user as IUser); // Assuming IUser is your user interface
+    done(null, user);
   } catch (error) {
     done(error, null);
   }
