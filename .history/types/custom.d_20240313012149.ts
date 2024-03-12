@@ -9,7 +9,7 @@ declare module "express-session" {
     state?: string;
     code?: string;
     successState?: string;
-    githubUrl?: string;
+    githubUrl
   }
 }
 
