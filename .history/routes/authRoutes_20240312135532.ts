@@ -207,21 +207,9 @@ router.get('/github/callback',
 //         }
 // });
 
-// This endpoint handles the exchange of the authorization code for an access token
 router.post('/github/token', async (req, res) => {
     const { code } = req.body;
-    const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-
-    if (!githubId) {
-        return res.status(400).json({ error: 'GitHub ID missing from session.' });
-    }
-
     try {
-        const user = await User.findOne({ githubId });
-        if (!user) {
-            return res.status(404).json({ error: 'User not found.' });
-        }
-
         const response = await fetch('https://github.com/login/oauth/access_token', {
             method: 'POST',
             headers: {
@@ -237,18 +225,31 @@ router.post('/github/token', async (req, res) => {
         });
 
         const data = await response.json();
+
         if (data.access_token) {
+            console.log('Exchanged token successfully:', data.access_token);
+
+            const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
+            const user = await User.findOne({ githubId: githubId });
+
+            if (!user) {
+                console.error('User not found for the provided GitHub ID.');
+                res.status(404).json({ error: 'User not found.' });
+                return;
+            }
+
             user.accessToken = data.access_token;
             await user.save();
-            console.log('Access token updated for user:', user.githubId);
+            console.log('User access token updated successfully.', user);
+
             res.json({ access_token: data.access_token });
         } else {
-            console.error('Failed to exchange token:', data);
+            console.error('Failed to exchange token', data);
             res.status(400).json({ error: 'Failed to exchange token.', details: data });
         }
     } catch (error) {
-        console.error('Error during token exchange:', error);
-        res.status(500).json({ error: 'Internal server error during token exchange.' });
+        console.error('Error during token exchange process:', error);
+        res.status(500).json({ error: 'Internal server error during token exchange.', details: error });
     }
 });
 
