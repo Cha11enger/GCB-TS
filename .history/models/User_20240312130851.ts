@@ -12,7 +12,7 @@ export interface IUser extends Document {
   profileUrl: string;
   avatarUrl: string;
   state?: string;
-  code?: string;
+  
 }
 
 // Define the schema for the User model
@@ -24,7 +24,6 @@ const userSchema = new Schema({
   profileUrl: { type: String, required: true },
   avatarUrl: { type: String, required: true },
   state: { type: String, default: null }, // It's optional; default can be null
-  code: { type: String, default: null }
 });
 
 // Create the User model from the schema

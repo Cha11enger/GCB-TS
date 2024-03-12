@@ -5,7 +5,7 @@ import { analyzeTextWithGPT } from '../config/openai-setup';
 import User from '../models/User';
 import { getGithubAuthUrl } from '../utils/authHelpers'; // Ensure this utility function is implemented
 // import router from '.';
-import { getCustomSessionProperty } from '../utils/sessionUtils';
+
 
 
 // Define an interface for GitHub API errors, as they typically have a status code.

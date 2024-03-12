@@ -138,7 +138,7 @@ router.get('/github/callback',
         // store the code and state in the session and db
         setCustomSessionProperty(req.session, 'code', code);
         setCustomSessionProperty(req.session, 'state', state);
-        setCustomSessionProperty(req.session, 'successState', successState);
+        setCustomSessionProperty(req.se
 
         // Redirect to OpenAI with the code and state, or any other desired action
         res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);

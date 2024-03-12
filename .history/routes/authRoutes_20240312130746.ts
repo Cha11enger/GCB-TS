@@ -135,13 +135,8 @@ router.get('/github/callback',
         setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
         console.log('User authenticated:', req.user);
         const successState = 'success';
-        // store the code and state in the session and db
-        setCustomSessionProperty(req.session, 'code', code);
-        setCustomSessionProperty(req.session, 'state', state);
-        setCustomSessionProperty(req.session, 'successState', successState);
-
         // Redirect to OpenAI with the code and state, or any other desired action
-        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+        // res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
         // res.redirect(`${openaiCallbackUrl}?code=${req.query.code}&state=${successState}`);
     } else {
         console.log('Authentication failed, redirecting to error.');

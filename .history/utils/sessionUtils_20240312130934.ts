@@ -8,7 +8,6 @@ interface CustomSession extends Session {
     githubUrl?: string;
     state?: string;
     code?: string;
-    successState?: string;
 }
 
 // Utility function to set custom session properties safely
