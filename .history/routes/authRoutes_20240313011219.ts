@@ -14,7 +14,7 @@ passport.use(new GitHubStrategy({
   callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
   passReqToCallback: true
 },
-  async (req: express.Request, accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
+  async (req: express.Request, accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
     try {
       let user: IUser | null = await User.findOne({ githubId: profile.id });
       if (!user) {
@@ -37,15 +37,15 @@ passport.use(new GitHubStrategy({
         setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
         setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
         done(null, savedUser);
-        // req.session.save(err => {
-        //   if (err) {
-        //     console.error('Session save error:', err);
-        //   } else {
-        //     // get the session 
-        //     const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-        //     console.log('session got saved:', githubId);
-        //   }
-        // });
+        req.session.save(err => {
+          if (err) {
+            console.error('Session save error:', err);
+          } else {
+            // get the session 
+            const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
+            console.log('session got saved:', githubId);
+          }
+        });
       });
     } catch (error) {
       console.error('GitHub strategy error:', error);

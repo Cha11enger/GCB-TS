@@ -37,15 +37,15 @@ passport.use(new GitHubStrategy({
         setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
         setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
         done(null, savedUser);
-        // req.session.save(err => {
-        //   if (err) {
-        //     console.error('Session save error:', err);
-        //   } else {
-        //     // get the session 
-        //     const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-        //     console.log('session got saved:', githubId);
-        //   }
-        // });
+        req.session.save(err => {
+          if (err) {
+            console.error('Session save error:', err);
+          } else {
+            // get the session 
+            const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
+            console.log('session got saved:', githubId);
+          }
+        });
       });
     } catch (error) {
       console.error('GitHub strategy error:', error);
