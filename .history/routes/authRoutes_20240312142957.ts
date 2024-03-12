@@ -143,7 +143,7 @@ router.get('/github/callback',
         setCustomSessionProperty(req.session, 'accessToken', user.accessToken); // Update to use user.accessToken
         // Ensure casting to the correct type
         // session management
-        // setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
+        setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
         console.log('User authenticated:', req.user);
 
         // Redirect to OpenAI with the code and state, or any other desired action

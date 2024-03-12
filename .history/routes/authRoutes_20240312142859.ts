@@ -131,20 +131,17 @@ router.get('/github/callback',
 
     if (req.user) {
         // const user: IUser & { githubId: string } = req.user as IUser & { githubId: string }; // Cast req.user to include the githubId property
-        const user = req.user as IUser & { githubId: string }; 
-        
+        const user = req.user as IUser & { githubId: string }; // Ensure casting to the correct type
+        // session management
+        setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
+        console.log('User authenticated:', req.user);
         const successState = 'success';
-        
         // store the code and state in the session and db
         setCustomSessionProperty(req.session, 'code', code);
         setCustomSessionProperty(req.session, 'state', state);
         setCustomSessionProperty(req.session, 'successState', successState);
         setCustomSessionProperty(req.session, 'githubId', user.githubId); // Update to use user.githubId
         setCustomSessionProperty(req.session, 'accessToken', user.accessToken); // Update to use user.accessToken
-        // Ensure casting to the correct type
-        // session management
-        // setCustomSessionProperty(req.session, 'accessToken', user.accessToken);
-        console.log('User authenticated:', req.user);
 
         // Redirect to OpenAI with the code and state, or any other desired action
         res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
