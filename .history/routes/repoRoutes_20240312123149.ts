@@ -76,7 +76,7 @@ const router = express.Router();
 // };
 
 const analyzeGithubUrl = async (req: Request, res: Response) => {
-  const { githubUrl, state } = req.body;
+  const { githubUrl } = req.body;
   const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
   const match = githubUrl.match(pathRegex);
 
@@ -85,53 +85,81 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
   }
 
   const [, owner, repo] = match;
+  let accessToken = process.env.GITHUB_PAT || ''; // Ensure accessToken is a string
 
-  // If state is 'success', use the user's token for private repos
-  const user = (state === 'success') ? await User.findOne({ username: owner }) : null;
-  let accessToken = user?.accessToken || process.env.GITHUB_PAT || '';
-
-  const attemptAccess = async (token?: string) => {
+  // Function to attempt repository access
+  const attemptAccess = async (token: string) => {
     const octokit = new Octokit({ auth: token });
-    try {
-      return await octokit.repos.get({ owner, repo });
-    } catch (error) {
-      throw error;
-    }
+    return await octokit.repos.get({ owner, repo });
   };
 
   try {
-    const repoDetailsResponse = await attemptAccess(accessToken);
+    // First attempt with PAT or an empty string
+    const repoDetails = accessToken ? await attemptAccess(accessToken) : null;
     const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
     const analysisResult = await analyzeTextWithGPT(promptText);
-    return res.json({ analysis: analysisResult, repoDetails: repoDetailsResponse.data });
+    console.log('Analysis Result:', analysisResult);
+    return res.json({ analysis: analysisResult, repoDetails: repoDetails ? repoDetails.data : "Repository details not available" });
   } catch (error) {
-    const typedError = error as GitHubApiError;
-
-    if (typedError.status === 404) {
-      // Public repository not found
-      return res.status(404).json({ error: "Repository not found or access denied." });
-    } else if (typedError.status === 403) {
-      // Private repository or rate limit exceeded, check for user access token
+    const typedError = error as GitHubApiError; // Type assertion
+    if (typedError.status === 404 || typedError.status === 403) {
+      // Check if a user-specific accessToken is available for a retry
+      const user = await User.findOne({ username: owner });
       if (user && user.accessToken) {
-        // User has an access token, prompt to re-authenticate as the token may have expired or scopes are insufficient
-        return res.status(403).json({
-          error: "Access to the repository or rate limit exceeded. Please re-authenticate.",
-          authUrl: getGithubAuthUrl(),
-        });
+        try {
+          // Retry with the user's access token
+          const repoDetails = await attemptAccess(user.accessToken);
+          const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
+          const analysisResult = await analyzeTextWithGPT(promptText);
+          console.log('Analysis Result:', analysisResult);
+          return res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
+        } catch (retryError) {
+          // If still failing after user token, likely an auth issue, prompt for auth
+          console.log('Retry Error:', retryError);
+          return res.status(401).json({
+            error: "Authentication required to access this repository. Please authenticate via GitHub.",
+            authUrl: getGithubAuthUrl(),
+          });
+        }
       } else {
-        // No user token, prompt for authentication
+        // No user token available, prompt for authentication
         return res.status(401).json({
-          error: "Access to private repository requires authentication. Please sign in via GitHub.",
+          error: "Authentication required to access this repository. Please authenticate via GitHub.",
           authUrl: getGithubAuthUrl(),
         });
       }
     } else {
-      // Other errors
+      // Generic error after all attempts
       console.error('GitHub API Error:', typedError);
       return res.status(500).json({ error: "Error fetching repository details." });
     }
   }
 };
+
+router.post('/analyze', async (req: Request, res: Response) => {
+  const { authenticated } = req.body;
+
+  if (authenticated) {
+    try {
+      const { accessToken } = req.body;
+      const { owner, repo } = req.body.repoDetails;
+      const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
+      const analysisResult = await analyzeTextWithGPT(promptText);
+      console.log('Analysis Result:', analysisResult);
+      return res.json({ analysis: analysisResult, repoDetails: req.body.repoDetails });
+    } catch (error) {
+      console.error('Analysis Error:', error);
+      return res.status(500).json({ error: "Error analyzing repository." });
+    }
+  } else {
+    return res.status(401).json({
+      error: "Authentication required to access this repository. Please authenticate via GitHub.",
+      authUrl: getGithubAuthUrl(),
+    });
+  }
+});
+
+export default router;
 
 router.post('/analyze', analyzeGithubUrl); // This line should now work without issue
 

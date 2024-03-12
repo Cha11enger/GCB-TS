@@ -75,63 +75,6 @@ const router = express.Router();
 //   }
 // };
 
-const analyzeGithubUrl = async (req: Request, res: Response) => {
-  const { githubUrl, state } = req.body;
-  const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
-  const match = githubUrl.match(pathRegex);
-
-  if (!match) {
-    return res.status(400).json({ error: "Invalid GitHub URL" });
-  }
-
-  const [, owner, repo] = match;
-
-  // If state is 'success', use the user's token for private repos
-  const user = (state === 'success') ? await User.findOne({ username: owner }) : null;
-  let accessToken = user?.accessToken || process.env.GITHUB_PAT || '';
-
-  const attemptAccess = async (token?: string) => {
-    const octokit = new Octokit({ auth: token });
-    try {
-      return await octokit.repos.get({ owner, repo });
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  try {
-    const repoDetailsResponse = await attemptAccess(accessToken);
-    const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
-    const analysisResult = await analyzeTextWithGPT(promptText);
-    return res.json({ analysis: analysisResult, repoDetails: repoDetailsResponse.data });
-  } catch (error) {
-    const typedError = error as GitHubApiError;
-
-    if (typedError.status === 404) {
-      // Public repository not found
-      return res.status(404).json({ error: "Repository not found or access denied." });
-    } else if (typedError.status === 403) {
-      // Private repository or rate limit exceeded, check for user access token
-      if (user && user.accessToken) {
-        // User has an access token, prompt to re-authenticate as the token may have expired or scopes are insufficient
-        return res.status(403).json({
-          error: "Access to the repository or rate limit exceeded. Please re-authenticate.",
-          authUrl: getGithubAuthUrl(),
-        });
-      } else {
-        // No user token, prompt for authentication
-        return res.status(401).json({
-          error: "Access to private repository requires authentication. Please sign in via GitHub.",
-          authUrl: getGithubAuthUrl(),
-        });
-      }
-    } else {
-      // Other errors
-      console.error('GitHub API Error:', typedError);
-      return res.status(500).json({ error: "Error fetching repository details." });
-    }
-  }
-};
 
 router.post('/analyze', analyzeGithubUrl); // This line should now work without issue
 
