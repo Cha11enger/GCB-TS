@@ -96,7 +96,6 @@ passport.use(new GitHubStrategy({
           // Store GitHub ID and access token in the session
         setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
         setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
-        console.log('Current session state:', req.session);
         req.session.save(err => {
             if(err) {
                 console.error('Session save error:', err);

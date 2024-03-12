@@ -94,20 +94,19 @@ passport.use(new GitHubStrategy({
             return done(err);
           }
           // Store GitHub ID and access token in the session
-        setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
-        setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
-        console.log('Current session state:', req.session);
-        req.session.save(err => {
+          setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
+          setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
+          req.session.save(err => {
             if(err) {
-                console.error('Session save error:', err);
+              console.error('Session save error:', err);
             } else {
-                    // get the session 
-                    getCustomSessionProperty<string>(req.session, 'githubId');
-                    console.log('Session saved successfully', savedUser.githubId);
+                // get the session 
+                get
+                console.log('Session saved successfully', req.);
             }
-        });
-        console.log('User authenticated and session updated:', savedUser);
-        done(null, savedUser); // Pass the user to the next middleware
+          });
+          console.log('User authenticated and session updated:', savedUser);
+          done(null, savedUser); // Pass the user to the next middleware
         });
       });
     } catch (error) {
@@ -234,10 +233,6 @@ router.get('/github/callback',
 router.post('/github/token', async (req, res) => {
     const { code } = req.body;
     const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-    // or get it from db
-    const user = await User.findOne({ githubId: githubId });
-    console.log('Session saved successfully', githubId);
-    console.log('Current session state:', req.session);
 
     if (!githubId) {
         console.error('GitHub ID missing from session.');
