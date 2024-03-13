@@ -5,7 +5,6 @@ import passport from 'passport';
 const GitHubStrategy = require('passport-github2').Strategy;
 import fetch from 'node-fetch';
 import User, { IUser } from '../models/User'; // Ensure IUser is correctly exported
-import { setCustomSessionProperty, getCustomSessionProperty  } from '../utils/sessionUtils';
 
 const router = express.Router();
 
@@ -18,62 +17,7 @@ const router = express.Router();
 //   };
 // }
 
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID as string,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
-    passReqToCallback: true
-  },
-  async (req: express.Request, accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: IUser | false) => void) => {
-    try {
-      let user = await User.findOne({ githubId: profile.id });
 
-      if (!user) {
-        user = new User({
-          githubId: profile.id,
-          accessToken,
-          displayName: profile.displayName,
-          username: profile.username, // Make sure username is correctly mapped
-          profileUrl: profile.profileUrl, // Adjust if necessary
-          avatarUrl: profile._json.avatar_url,
-        });
-      } else {
-        // Update the access token for the existing user
-        user.accessToken = accessToken;
-      }
-
-      await user.save().then((savedUser) => {
-        req.login(savedUser, (err) => {
-          if (err) {
-            console.error('Error during login:', err);
-            return done(err);
-          }
-          // Store GitHub ID and access token in the session
-        setCustomSessionProperty(req.session, 'githubId', savedUser.githubId);
-        setCustomSessionProperty(req.session, 'accessToken', savedUser.accessToken);
-        console.log('Current session state:', req.session);
-        req.session.save(err => {
-            if(err) {
-                console.error('Session save error:', err);
-            } else {
-                    // get the session 
-                    const githubId = getCustomSessionProperty<string>(req.session, 'githubId');
-                    console.log('Session saved successfully', savedUser.githubId);
-                    // console githubid
-                    // console.log(`successfully saved session ${githubId}`);
-                    console.log('githubId:', githubId);
-            }
-        });
-        console.log('User authenticated and session updated:', savedUser);
-        done(null, savedUser); // Pass the user to the next middleware
-        });
-      });
-    } catch (error) {
-      console.error('Error in GitHub strategy:', error);
-      done(error, false);
-    }
-  }
-));
 
 // passport.use(new GitHubStrategy({
 //   clientID: process.env.GITHUB_CLIENT_ID as string,

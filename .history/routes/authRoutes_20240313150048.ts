@@ -5,7 +5,8 @@ import passport from 'passport';
 const GitHubStrategy = require('passport-github2').Strategy;
 import fetch from 'node-fetch';
 import User, { IUser } from '../models/User'; // Ensure IUser is correctly exported
-import { setCustomSessionProperty, getCustomSessionProperty  } from '../utils/sessionUtils';
+// import { setCustomSessionProperty, getCustomSessionProperty  } from '../utils/sessionUtils';
+
 
 const router = express.Router();
 
