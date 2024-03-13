@@ -24,7 +24,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
   }
 
   const [, owner, repo] = match;
-  const accessToken = (req.session as { user?: { accessToken: string } }).user?.accessToken || process.env.GITHUB_PAT; // Assuming session.user has been set
+  const accessToken = req.session.user ? req.session.user.accessToken : process.env.GITHUB_PAT; // Assuming session.user has been set
 
   try {
     const octokit = new Octokit({ auth: accessToken });

@@ -14,39 +14,6 @@ interface GitHubApiError extends Error {
 
 const router = express.Router(); 
 
-const analyzeGithubUrl = async (req: Request, res: Response) => {
-  const { githubUrl } = req.body;
-  const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
-  const match = githubUrl.match(pathRegex);
-
-  if (!match) {
-    return res.status(400).json({ error: "Invalid GitHub URL" });
-  }
-
-  const [, owner, repo] = match;
-  const accessToken = (req.session as { user?: { accessToken: string } }).user?.accessToken || process.env.GITHUB_PAT; // Assuming session.user has been set
-
-  try {
-    const octokit = new Octokit({ auth: accessToken });
-    const repoDetails = await octokit.repos.get({ owner, repo });
-    const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
-    const analysisResult = await analyzeTextWithGPT(promptText);
-    res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
-  } catch (error) {
-    const typedError = error as GitHubApiError;
-    if (typedError.status === 404 || typedError.status === 403) {
-      // Repository not found or access denied
-      res.status(typedError.status).json({
-        error: "Repository not found or access denied. Please check the repository URL and access permissions.",
-        authUrl: typedError.status === 403 ? getGithubAuthUrl() : undefined,
-      });
-    } else {
-      console.error('GitHub API Error:', typedError);
-      res.status(500).json({ error: "Error fetching repository details." });
-    }
-  }
-};
-
 // const analyzeGithubUrl = async (req: Request, res: Response) => {
 //   const { githubUrl } = req.body;
 //   const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;

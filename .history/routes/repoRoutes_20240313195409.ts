@@ -24,7 +24,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
   }
 
   const [, owner, repo] = match;
-  const accessToken = (req.session as { user?: { accessToken: string } }).user?.accessToken || process.env.GITHUB_PAT; // Assuming session.user has been set
+  const accessToken = req.session.user ? req.session.user.accessToken : process.env.GITHUB_PAT; // Assuming session.user has been set
 
   try {
     const octokit = new Octokit({ auth: accessToken });
@@ -46,66 +46,6 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
     }
   }
 };
-
-// const analyzeGithubUrl = async (req: Request, res: Response) => {
-//   const { githubUrl } = req.body;
-//   const pathRegex = /github\.com\/([^\/]+)\/([^\/]+)/;
-//   const match = githubUrl.match(pathRegex);
-
-//   if (!match) {
-//     return res.status(400).json({ error: "Invalid GitHub URL" });
-//   }
-
-//   const [, owner, repo] = match;
-//   const accessToken = req.user ? (req.user as IUser).accessToken : process.env.GITHUB_PAT;
-
-//   // Function to attempt repository access
-//   const attemptAccess = async (token: string) => {
-//     const octokit = new Octokit({ auth: token });
-//     return await octokit.repos.get({ owner, repo });
-//   };
-
-//   try {
-//     const repoDetails = await attemptAccess(accessToken || ''); // Provide a default value of an empty string if accessToken is undefined
-//     const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
-//     const analysisResult = await analyzeTextWithGPT(promptText);
-//     console.log('Analysis Result:', analysisResult);
-//     return res.json({ analysis: analysisResult, repoDetails: repoDetails ? repoDetails.data : "Repository details not available" });
-//   } catch (error) {
-//     const typedError = error as GitHubApiError; // Type assertion
-//     if (typedError.status === 404 || typedError.status === 403) {
-//       // Check if a user-specific accessToken is available for a retry
-//       const user = await User.findOne({ username: owner });
-//       if (user && user.accessToken) {
-//         try {
-//           // Retry with the user's access token
-//           const repoDetails = await attemptAccess(user.accessToken);
-//           const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
-//           const analysisResult = await analyzeTextWithGPT(promptText);
-//           console.log('Analysis Result:', analysisResult);
-//           return res.json({ analysis: analysisResult, repoDetails: repoDetails.data });
-//         } catch (retryError) {
-//           // If still failing after user token, likely an auth issue, prompt for auth
-//           console.log('Retry Error:', retryError);
-//           return res.status(401).json({
-//             error: "Authentication required to access this repository. Please authenticate via GitHub.",
-//             authUrl: getGithubAuthUrl(),
-//           });
-//         }
-//       } else {
-//         // No user token available, prompt for authentication
-//         return res.status(401).json({
-//           error: "Authentication required to access this repository. Please authenticate via GitHub.",
-//           authUrl: getGithubAuthUrl(),
-//         });
-//       }
-//     } else {
-//       // Generic error after all attempts
-//       console.error('GitHub API Error:', typedError);
-//       return res.status(500).json({ error: "Error fetching repository details." });
-//     }
-//   }
-// };
 
 
 // const analyzeGithubUrl = async (req: Request, res: Response) => {
