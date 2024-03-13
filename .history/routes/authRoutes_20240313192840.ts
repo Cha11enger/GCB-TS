@@ -37,6 +37,7 @@ router.get('/github/callback', (req, res) => {
     }
 });
 
+
 // Function to fetch user data from GitHub using access token
 async function fetchGitHubUserData(accessToken: string): Promise<any> {
   const response = await fetch('https://api.github.com/user', {
@@ -80,11 +81,11 @@ router.post('/github/token', async (req, res) => {
   }
 });
 
-async function saveUser(accessToken: string): Promise<void> {
-  const userData: any = await fetchGitHubUserData(accessToken);
+async function saveUser(accessToken) {
+  const userData = await fetchGitHubUserData(accessToken);
   console.log('After fetching GitHub user data');
 
-  let user: any = await User.findOne({ githubId: userData.id });
+  let user = await User.findOne({ githubId: userData.id });
   if (!user) {
       user = new User({
           githubId: userData.id,
@@ -101,5 +102,7 @@ async function saveUser(accessToken: string): Promise<void> {
   await user.save();
   console.log('User saved');
 }
+
+
 
 export default router;

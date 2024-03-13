@@ -37,6 +37,85 @@ router.get('/github/callback', (req, res) => {
     }
 });
 
+// router.get('/github/callback', async (req, res) => {
+//   const { code, state } = req.query;
+//   const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
+//   console.log('Inside /github/callback route');
+
+//   if (!code) {
+//     console.error('GitHub callback did not provide a code.');
+//     return res.redirect(`${openaiCallbackUrl}?error=missing_code&state=${state}`);
+//   }
+
+//   try {
+//     // const accessToken = await exchangeCodeForToken(code.toString());
+//     // const userData = await fetchGitHubUserData(accessToken);
+//     // console.log('After fetching GitHub user data');
+
+//     // let user = await User.findOne({ githubId: userData.id });
+//     // if (!user) {
+//     //   user = new User({
+//     //     githubId: userData.id,
+//     //     accessToken,
+//     //     displayName: userData.name,
+//     //     username: userData.login,
+//     //     profileUrl: userData.html_url,
+//     //     avatarUrl: userData.avatar_url,
+//     //   });
+//     // } else {
+//     //   user.accessToken = accessToken; // Update the access token
+//     // }
+
+//     // await user.save();
+//     // console.log('User saved');
+
+//     // Set session or other indicators as needed
+//     // e.g., req.session.user = user;
+//     // (req.session as any).user = user;
+
+//     // Redirect with proper code and state
+//     res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+//   } catch (error) {
+//     console.error('Error during GitHub OAuth process:', error);
+//     res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+//   }
+// });
+
+// Function to exchange code for an access token
+// async function exchangeCodeForToken(code: string): Promise<string> {
+//   const clientId = process.env.GITHUB_CLIENT_ID;
+//   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+//   const redirectUri = `${process.env.SERVER_URL}/api/auth/github/callback`;
+//   console.log('Inside exchangeCodeForToken function');
+
+//   const response = await fetch('https://github.com/login/oauth/access_token', {
+//     method: 'POST',
+//     headers: {
+//       'Accept': 'application/json',
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({
+//       client_id: clientId,
+//       client_secret: clientSecret,
+//       code: code,
+//       redirect_uri: redirectUri,
+//     }),
+//   });
+
+//   const data = await response.json();
+//   if (!response.ok || data.error) {
+//     throw new Error(data.error_description || 'Failed to exchange code for token.');
+//   }
+
+//   // Additional safety check for the response Content-Type
+//   const contentType = response.headers.get('content-type');
+//   if (!contentType || !contentType.includes('application/json')) {
+//     throw new TypeError("Oops, we haven't got JSON!");
+//   }
+
+//   return data.access_token;
+// }
+
 // Function to fetch user data from GitHub using access token
 async function fetchGitHubUserData(accessToken: string): Promise<any> {
   const response = await fetch('https://api.github.com/user', {
@@ -80,11 +159,11 @@ router.post('/github/token', async (req, res) => {
   }
 });
 
-async function saveUser(accessToken: string): Promise<void> {
-  const userData: any = await fetchGitHubUserData(accessToken);
+async function saveUser(accessToken) {
+  const userData = await fetchGitHubUserData(accessToken);
   console.log('After fetching GitHub user data');
 
-  let user: any = await User.findOne({ githubId: userData.id });
+  let user = await User.findOne({ githubId: userData.id });
   if (!user) {
       user = new User({
           githubId: userData.id,
@@ -101,5 +180,7 @@ async function saveUser(accessToken: string): Promise<void> {
   await user.save();
   console.log('User saved');
 }
+
+
 
 export default router;
