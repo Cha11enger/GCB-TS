@@ -179,31 +179,70 @@ router.post('/github/token', async (req, res) => {
     // Fetch user data using the access token
     const userData = await fetchGitHubUserData(accessToken);
 
-    // Process user data saving in a non-blocking manner
-    (async () => {
-      try {
-        // Attempt to find and update the user, or create a new one if not found
-        await User.findOneAndUpdate({ githubId: userData.id }, {
-          githubId: userData.id,
-          accessToken,
-          displayName: userData.name || "",
-          username: userData.login,
-          profileUrl: userData.html_url,
-          avatarUrl: userData.avatar_url,
-        }, { upsert: true, new: true });
-      } catch (saveError) {
-        console.error('Error saving user data:', saveError);
-      }
-    })();
+    // Look for an existing user in the database
+    let user = await User.findOne({ githubId: userData.id });
+    if (!user) {
+      // Create a new user if not found
+      user = new User({
+        githubId: userData.id,
+        accessToken,
+        displayName: userData.name || "",
+        username: userData.login,
+        profileUrl: userData.html_url,
+        avatarUrl: userData.avatar_url,
+      });
+    } else {
+      // Update the access token for the existing user
+      user.accessToken = accessToken;
+    }
 
-    // Immediately respond with the access token
-    res.json({ message: 'Access token retrieved successfully', accessToken });
+    // Save the user in the database
+    await user.save();
+
+    // Respond with a success message and the access token
+    res.json({ message: 'User authenticated and saved', accessToken });
   } catch (error) {
     console.error('Error during token exchange or user data fetch:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-});
+  // return accessToken;
+  let accessToken: string;
 
+  try {
+    // Exchange the GitHub code for an access token
+    accessToken = await exchangeCodeForToken(code);
+    // Fetch user data using the access token
+    const userData = await fetchGitHubUserData(accessToken);
+
+    // Look for an existing user in the database
+    let user = await User.findOne({ githubId: userData.id });
+    if (!user) {
+      // Create a new user if not found
+      user = new User({
+        githubId: userData.id,
+        accessToken,
+        displayName: userData.name || "",
+        username: userData.login,
+        profileUrl: userData.html_url,
+        avatarUrl: userData.avatar_url,
+      });
+    } else {
+      // Update the access token for the existing user
+      user.accessToken = accessToken;
+    }
+
+    // Save the user in the database
+    await user.save();
+
+    // Respond with a success message and the access token
+    res.json({ message: 'User authenticated and saved', accessToken });
+  } catch (error) {
+    console.error('Error during token exchange or user data fetch:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+  const data = res.json();
+  return data;
+});
 
 async function exchangeCodeForToken(code: string): Promise<string> {
   const clientId = process.env.GITHUB_CLIENT_ID;
