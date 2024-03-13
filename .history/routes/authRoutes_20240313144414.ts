@@ -1,28 +1,27 @@
 // routes/authRoutes.ts
 import express from 'express';
 import passport from 'passport';
-// import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
-const GitHubStrategy = require('passport-github2').Strategy;
+import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
 import fetch from 'node-fetch';
 import User, { IUser } from '../models/User'; // Ensure IUser is correctly exported
 
 const router = express.Router();
 
 // Extend the Profile interface to include the properties used in the GitHub strategy callback
-// interface ExtendedGitHubProfile extends Profile {
-//   _json: {
-//     login: string;
-//     html_url: string;
-//     avatar_url: string;
-//   };
-// }
+interface ExtendedGitHubProfile extends Profile {
+  _json: {
+    login: string;
+    html_url: string;
+    avatar_url: string;
+  };
+}
 
 passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID as string,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+  clientID: process.env.GITHUB_CLIENT_ID,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET,
   callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
 },
-async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
+async (_accessToken, _refreshToken, profile, done) => {
   try {
     let user = await User.findOne({ githubId: profile.id });
     if (!user) {

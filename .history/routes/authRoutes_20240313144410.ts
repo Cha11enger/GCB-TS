@@ -1,50 +1,20 @@
 // routes/authRoutes.ts
 import express from 'express';
 import passport from 'passport';
-// import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
-const GitHubStrategy = require('passport-github2').Strategy;
+import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
 import fetch from 'node-fetch';
 import User, { IUser } from '../models/User'; // Ensure IUser is correctly exported
 
 const router = express.Router();
 
 // Extend the Profile interface to include the properties used in the GitHub strategy callback
-// interface ExtendedGitHubProfile extends Profile {
-//   _json: {
-//     login: string;
-//     html_url: string;
-//     avatar_url: string;
-//   };
-// }
-
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID as string,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-  callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
-},
-async (_accessToken: string, _refreshToken: string, profile: any, done: (error: any, user?: any) => void) => {
-  try {
-    let user = await User.findOne({ githubId: profile.id });
-    if (!user) {
-      user = new User({
-        githubId: profile.id,
-        accessToken: _accessToken, // Assuming the accessToken provided by the strategy is the one we want to save.
-        displayName: profile.displayName,
-        username: profile.username,
-        profileUrl: profile.profileUrl, // Make sure this is the correct path for the profile URL
-        avatarUrl: profile.photos[0].value, // Assuming the first photo is the avatar.
-      });
-    } else {
-      // If the user exists, update their accessToken.
-      user.accessToken = _accessToken;
-    }
-    const savedUser = await user.save();
-    done(null, savedUser);
-  } catch (error) {
-    console.error('GitHub strategy error:', error);
-    done(error);
-  }
-}));
+interface ExtendedGitHubProfile extends Profile {
+  _json: {
+    login: string;
+    html_url: string;
+    avatar_url: string;
+  };
+}
 
 // passport.use(new GitHubStrategy({
 //     clientID: process.env.GITHUB_CLIENT_ID as string,
