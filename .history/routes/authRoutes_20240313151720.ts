@@ -89,7 +89,7 @@ async function exchangeCodeForToken(code: string): Promise<string> {
 }
 
 // Function to fetch user data from GitHub using access token
-async function fetchGitHubUserData(accessToken: string): Promise<any> { 
+async function fetchGitHubUserData(accessToken) {
   const response = await fetch('https://api.github.com/user', {
     headers: {
       'Authorization': `token ${accessToken}`,

@@ -26,11 +26,6 @@ router.get('/github/callback', async (req, res) => {
   const { code, state } = req.query;
   const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
 
-  if (!code) {
-    console.error('GitHub callback did not provide a code.');
-    return res.redirect(`${openaiCallbackUrl}?error=missing_code&state=${state}`);
-  }
-
   try {
     // Exchange code for an access token
     const accessToken = await exchangeCodeForToken(code.toString());
@@ -63,9 +58,8 @@ router.get('/github/callback', async (req, res) => {
   }
 });
 
-
 // Function to exchange code for an access token
-async function exchangeCodeForToken(code: string): Promise<string> {
+async function exchangeCodeForToken(code) {
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
   const response = await fetch('https://github.com/login/oauth/access_token', {
@@ -89,7 +83,7 @@ async function exchangeCodeForToken(code: string): Promise<string> {
 }
 
 // Function to fetch user data from GitHub using access token
-async function fetchGitHubUserData(accessToken: string): Promise<any> { 
+async function fetchGitHubUserData(accessToken) {
   const response = await fetch('https://api.github.com/user', {
     headers: {
       'Authorization': `token ${accessToken}`,
