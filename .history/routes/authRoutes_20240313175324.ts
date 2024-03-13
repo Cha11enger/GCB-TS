@@ -38,28 +38,28 @@ router.get('/github/callback', async (req, res) => {
   try {
     // const accessToken = await exchangeCodeForToken(code.toString());
     // const userData = await fetchGitHubUserData(accessToken);
-    // console.log('After fetching GitHub user data');
+    console.log('After fetching GitHub user data');
 
-    // let user = await User.findOne({ githubId: userData.id });
-    // if (!user) {
-    //   user = new User({
-    //     githubId: userData.id,
-    //     accessToken,
-    //     displayName: userData.name,
-    //     username: userData.login,
-    //     profileUrl: userData.html_url,
-    //     avatarUrl: userData.avatar_url,
-    //   });
-    // } else {
-    //   user.accessToken = accessToken; // Update the access token
-    // }
+    let user = await User.findOne({ githubId: userData.id });
+    if (!user) {
+      user = new User({
+        githubId: userData.id,
+        accessToken,
+        displayName: userData.name,
+        username: userData.login,
+        profileUrl: userData.html_url,
+        avatarUrl: userData.avatar_url,
+      });
+    } else {
+      user.accessToken = accessToken; // Update the access token
+    }
 
-    // await user.save();
-    // console.log('User saved');
+    await user.save();
+    console.log('User saved');
 
     // Set session or other indicators as needed
     // e.g., req.session.user = user;
-    // (req.session as any).user = user;
+    (req.session as any).user = user;
 
     // Redirect with proper code and state
     res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);

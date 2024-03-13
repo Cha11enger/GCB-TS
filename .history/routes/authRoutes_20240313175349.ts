@@ -59,7 +59,7 @@ router.get('/github/callback', async (req, res) => {
 
     // Set session or other indicators as needed
     // e.g., req.session.user = user;
-    // (req.session as any).user = user;
+    (req.session as any).user = user;
 
     // Redirect with proper code and state
     res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
