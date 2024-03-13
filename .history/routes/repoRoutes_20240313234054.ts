@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { Octokit } from "@octokit/rest";
 import { analyzeTextWithGPT } from '../config/openai-setup';
-import User from '../models/User'; // Make sure the import path matches your project structure
+import User, { IUser } from '../models/User'; // Make sure the import path matches your project structure
 import { getGithubAuthUrl } from '../utils/authHelpers';
 
 // Define the interface for error handling
@@ -21,9 +21,7 @@ router.post('/analyze', async (req: Request, res: Response) => {
   }
 
   const [, owner, repo] = match;
-  // (req.session as any).user = { accessToken: "someAccessTokenValue" };
-  const accessToken = (req.session as any).user?.accessToken || process.env.GITHUB_PAT;
-  console.log('accessToken:', accessToken);
+  const accessToken = (req.session?.user as { accessToken?: string } | undefined)?.accessToken || process.env.GITHUB_PAT;
 
   try {
     const repoDetails = await fetchRepositoryDetails(owner, repo, accessToken);

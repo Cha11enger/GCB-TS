@@ -25,6 +25,7 @@ router.post('/analyze', async (req: Request, res: Response) => {
   const accessToken = (req.session as any).user?.accessToken || process.env.GITHUB_PAT;
   console.log('accessToken:', accessToken);
 
+
   try {
     const repoDetails = await fetchRepositoryDetails(owner, repo, accessToken);
     await proceedWithAnalysis(owner, repo, accessToken, repoDetails, res);

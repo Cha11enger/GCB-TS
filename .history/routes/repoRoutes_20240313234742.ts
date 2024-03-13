@@ -23,7 +23,8 @@ router.post('/analyze', async (req: Request, res: Response) => {
   const [, owner, repo] = match;
   // (req.session as any).user = { accessToken: "someAccessTokenValue" };
   const accessToken = (req.session as any).user?.accessToken || process.env.GITHUB_PAT;
-  console.log('accessToken:', accessToken);
+  console
+
 
   try {
     const repoDetails = await fetchRepositoryDetails(owner, repo, accessToken);
