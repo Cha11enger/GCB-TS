@@ -67,16 +67,13 @@ router.get('/github/callback', async (req, res) => {
 
       // Set session or other indicators as needed
       // e.g., req.session.user = user;
-      (req.session as any).user = user;
+      req.session.user
 
-      // Redirect with proper code and state
-        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
-      // res.redirect(`${openaiCallbackUrl}?success=true&state=${state}&userId=${user._id}`);
+      // Redirect with success state or token as needed
+      res.redirect(`${openaiCallbackUrl}?success=true&state=${state}&userId=${user._id}`);
   } catch (error) {
       console.error('Error during GitHub OAuth process:', error);
-      // res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-
+      res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
   }
 });
 

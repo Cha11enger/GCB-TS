@@ -75,7 +75,7 @@ router.get('/github/callback', async (req, res) => {
   } catch (error) {
       console.error('Error during GitHub OAuth process:', error);
       // res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+//         res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
 
   }
 });
