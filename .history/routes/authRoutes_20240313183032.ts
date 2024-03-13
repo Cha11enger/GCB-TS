@@ -82,39 +82,39 @@ router.get('/github/callback', (req, res) => {
 // });
 
 // Function to exchange code for an access token
-// async function exchangeCodeForToken(code: string): Promise<string> {
-//   const clientId = process.env.GITHUB_CLIENT_ID;
-//   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-//   const redirectUri = `${process.env.SERVER_URL}/api/auth/github/callback`;
-//   console.log('Inside exchangeCodeForToken function');
+async function exchangeCodeForToken(code: string): Promise<string> {
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const redirectUri = `${process.env.SERVER_URL}/api/auth/github/callback`;
+  console.log('Inside exchangeCodeForToken function');
 
-//   const response = await fetch('https://github.com/login/oauth/access_token', {
-//     method: 'POST',
-//     headers: {
-//       'Accept': 'application/json',
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify({
-//       client_id: clientId,
-//       client_secret: clientSecret,
-//       code: code,
-//       redirect_uri: redirectUri,
-//     }),
-//   });
+  const response = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code: code,
+      redirect_uri: redirectUri,
+    }),
+  });
 
-//   const data = await response.json();
-//   if (!response.ok || data.error) {
-//     throw new Error(data.error_description || 'Failed to exchange code for token.');
-//   }
+  const data = await response.json();
+  if (!response.ok || data.error) {
+    throw new Error(data.error_description || 'Failed to exchange code for token.');
+  }
 
-//   // Additional safety check for the response Content-Type
-//   const contentType = response.headers.get('content-type');
-//   if (!contentType || !contentType.includes('application/json')) {
-//     throw new TypeError("Oops, we haven't got JSON!");
-//   }
+  // Additional safety check for the response Content-Type
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new TypeError("Oops, we haven't got JSON!");
+  }
 
-//   return data.access_token;
-// }
+  return data.access_token;
+}
 
 // Function to fetch user data from GitHub using access token
 async function fetchGitHubUserData(accessToken: string): Promise<any> {
@@ -133,40 +133,6 @@ async function fetchGitHubUserData(accessToken: string): Promise<any> {
 }
 
 // Endpoint to exchange GitHub code for access token and fetch user data
-// router.post('/github/token', async (req, res) => {
-//   const { code } = req.body;
-//   if (!code) {
-//     return res.status(400).json({ error: 'Code is required' });
-//   }
-
-//   try {
-//     const accessToken = await exchangeCodeForToken(code);
-//     const userData = await fetchGitHubUserData(accessToken);
-//     console.log('After fetching GitHub user data');
-
-//     let user = await User.findOne({ githubId: userData.id });
-//     if (!user) {
-//       user = new User({
-//         githubId: userData.id,
-//         accessToken,
-//         displayName: userData.name,
-//         username: userData.login,
-//         profileUrl: userData.html_url,
-//         avatarUrl: userData.avatar_url,
-//       });
-//     } else {
-//       user.accessToken = accessToken; // Update the access token
-//     }
-
-//     await user.save();
-//     console.log('User saved');
-//     res.json({ message: 'User authenticated and saved', data.accessToken });
-//   } catch (error) {
-//     console.error('Error during token exchange or user data fetch:', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
-
 router.post('/github/token', async (req, res) => {
   const { code } = req.body;
   if (!code) {
@@ -174,70 +140,31 @@ router.post('/github/token', async (req, res) => {
   }
 
   try {
-    // Exchange the GitHub code for an access token
     const accessToken = await exchangeCodeForToken(code);
-    // Fetch user data using the access token
     const userData = await fetchGitHubUserData(accessToken);
+    console.log('After fetching GitHub user data');
 
-    // Look for an existing user in the database
     let user = await User.findOne({ githubId: userData.id });
     if (!user) {
-      // Create a new user if not found
       user = new User({
         githubId: userData.id,
         accessToken,
-        displayName: userData.name || "",
+        displayName: userData.name,
         username: userData.login,
         profileUrl: userData.html_url,
         avatarUrl: userData.avatar_url,
       });
     } else {
-      // Update the access token for the existing user
-      user.accessToken = accessToken;
+      user.accessToken = accessToken; // Update the access token
     }
 
-    // Save the user in the database
     await user.save();
-
-    // Respond with a success message and the access token
-    res.json({ message: 'User authenticated and saved', accessToken });
+    console.log('User saved');
+    res.json({ message: 'User authenticated and saved', user. });
   } catch (error) {
     console.error('Error during token exchange or user data fetch:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-async function exchangeCodeForToken(code: string): Promise<string> {
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-  const redirectUri = `${process.env.SERVER_URL}/api/auth/github/callback`;
-
-  const response = await fetch('https://github.com/login/oauth/access_token', {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
-      redirect_uri: redirectUri,
-    }),
-  });
-
-  const data = await response.json();
-  if (!response.ok || data.error) {
-    throw new Error(data.error_description || 'Failed to exchange code for token.');
-  }
-
-  // Additional safety check for the response Content-Type
-  if (!response.headers.get('content-type')?.includes('application/json')) {
-    throw new TypeError("Oops, we haven't got JSON!");
-  }
-
-  return data.access_token;
-}
-
 
 export default router;
