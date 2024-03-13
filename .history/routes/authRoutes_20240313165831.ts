@@ -21,7 +21,7 @@ router.get('/github', (req, res) => {
 
 router.get('/github/callback', async (req, res) => {
     const { code, state } = req.query;
-    const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
+    // const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
 
     if (!code) {
         return res.status(400).json({ error: 'GitHub callback did not provide a code.' });
@@ -46,15 +46,11 @@ router.get('/github/callback', async (req, res) => {
         }
         await user.save();
 
-        // redirect to openaiCallbackUrl with the user state and code and also this if possible ?success=true&userId=${user._id}`);
-        res.redirect(`${openaiCallbackUrl}?state=${state}&code=${user._id}`);
-
         // Redirect or respond as needed, perhaps to a URL with the user state or a success message
-        // res.redirect(`${process.env.CUSTOM_GPT_UI_URL}?success=true&userId=${user._id}`);
+        res.redirect(`${process.env.CUSTOM_GPT_UI_URL}?success=true&userId=${user._id}`);
     } catch (error) {
         console.error('Error in GitHub OAuth callback:', error);
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed`);
-        // res.redirect(`${process.env.CUSTOM_GPT_UI_URL}?error=authorization_failed`);
+        res.redirect(`${process.env.CUSTOM_GPT_UI_URL}?error=authorization_failed`);
     }
 });
 

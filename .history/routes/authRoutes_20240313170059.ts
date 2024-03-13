@@ -53,7 +53,7 @@ router.get('/github/callback', async (req, res) => {
         // res.redirect(`${process.env.CUSTOM_GPT_UI_URL}?success=true&userId=${user._id}`);
     } catch (error) {
         console.error('Error in GitHub OAuth callback:', error);
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed`);
+        res
         // res.redirect(`${process.env.CUSTOM_GPT_UI_URL}?error=authorization_failed`);
     }
 });
