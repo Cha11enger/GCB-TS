@@ -35,8 +35,7 @@ router.get('/github/callback', (req, res) => {
     } else {
         res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
     }
-});
-
+});k
 // router.get('/github/callback', async (req, res) => {
 //   const { code, state } = req.query;
 //   const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;

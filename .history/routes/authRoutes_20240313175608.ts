@@ -24,62 +24,50 @@ router.get('/github', (req, res) => {
   res.redirect(authorizationURL);
 });
 
-// GitHub OAuth callbac
+// GitHub OAuth callback
+router.get('/github/callback', async (req, res) => {
+  const { code, state } = req.query;
+  const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
+  console.log('Inside /github/callback route');
 
-router.get('/github/callback', (req, res) => {
-    const { code, state } = req.query;
-    const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
+  if (!code) {
+    console.error('GitHub callback did not provide a code.');
+    return res.redirect(`${openaiCallbackUrl}?error=missing_code&state=${state}`);
+  }
 
-    if (code) {
-        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
-    } else {
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-    }
+  try {
+    // const accessToken = await exchangeCodeForToken(code.toString());
+    // const userData = await fetchGitHubUserData(accessToken);
+    // console.log('After fetching GitHub user data');
+
+    // let user = await User.findOne({ githubId: userData.id });
+    // if (!user) {
+    //   user = new User({
+    //     githubId: userData.id,
+    //     accessToken,
+    //     displayName: userData.name,
+    //     username: userData.login,
+    //     profileUrl: userData.html_url,
+    //     avatarUrl: userData.avatar_url,
+    //   });
+    // } else {
+    //   user.accessToken = accessToken; // Update the access token
+    // }
+
+    // await user.save();
+    // console.log('User saved');
+
+    // Set session or other indicators as needed
+    // e.g., req.session.user = user;
+    // (req.session as any).user = user;
+
+    // Redirect with proper code and state
+    res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+  } catch (error) {
+    console.error('Error during GitHub OAuth process:', error);
+    res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+  }
 });
-
-// router.get('/github/callback', async (req, res) => {
-//   const { code, state } = req.query;
-//   const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
-//   console.log('Inside /github/callback route');
-
-//   if (!code) {
-//     console.error('GitHub callback did not provide a code.');
-//     return res.redirect(`${openaiCallbackUrl}?error=missing_code&state=${state}`);
-//   }
-
-//   try {
-//     // const accessToken = await exchangeCodeForToken(code.toString());
-//     // const userData = await fetchGitHubUserData(accessToken);
-//     // console.log('After fetching GitHub user data');
-
-//     // let user = await User.findOne({ githubId: userData.id });
-//     // if (!user) {
-//     //   user = new User({
-//     //     githubId: userData.id,
-//     //     accessToken,
-//     //     displayName: userData.name,
-//     //     username: userData.login,
-//     //     profileUrl: userData.html_url,
-//     //     avatarUrl: userData.avatar_url,
-//     //   });
-//     // } else {
-//     //   user.accessToken = accessToken; // Update the access token
-//     // }
-
-//     // await user.save();
-//     // console.log('User saved');
-
-//     // Set session or other indicators as needed
-//     // e.g., req.session.user = user;
-//     // (req.session as any).user = user;
-
-//     // Redirect with proper code and state
-//     res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
-//   } catch (error) {
-//     console.error('Error during GitHub OAuth process:', error);
-//     res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-//   }
-// });
 
 // Function to exchange code for an access token
 async function exchangeCodeForToken(code: string): Promise<string> {

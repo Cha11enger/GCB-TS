@@ -24,19 +24,7 @@ router.get('/github', (req, res) => {
   res.redirect(authorizationURL);
 });
 
-// GitHub OAuth callbac
-
-router.get('/github/callback', (req, res) => {
-    const { code, state } = req.query;
-    const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
-
-    if (code) {
-        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
-    } else {
-        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
-    }
-});
-
+// GitHub OAuth callback
 // router.get('/github/callback', async (req, res) => {
 //   const { code, state } = req.query;
 //   const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
