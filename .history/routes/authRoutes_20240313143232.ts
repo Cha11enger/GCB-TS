@@ -16,33 +16,7 @@ interface ExtendedGitHubProfile extends Profile {
   };
 }
 
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID as string,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback"
-}, async (accessToken: string, _refreshToken: string, profile: Profile, cb: (error: any, user?: any) => void) => {
-    // Cast profile to ExtendedGitHubProfile to access the _json property
-    const githubProfile = profile as ExtendedGitHubProfile;
-  try {
-    let user = await User.findOne({ githubId: profile.id });
-    if (!user) {
-      user = new User({
-        githubId: profile.id,
-        accessToken,
-        displayName: profile.displayName || githubProfile._json.login,
-        username: githubProfile._json.login,
-        profileUrl: githubProfile._json.html_url,
-        avatarUrl: githubProfile._json.avatar_url,
-      });
-    } else {
-      user.accessToken = accessToken;
-    }
-    await user.save();
-    cb(null, user);
-  } catch (error) {
-    cb(error);
-  }
-}));
+const repoDetails = await attemptAccess(accessToken);
 
         //working proper upto auth 
 //         if (user) {

@@ -2,9 +2,10 @@
 import express, { Request, Response } from 'express';
 import { Octokit } from "@octokit/rest";
 import { analyzeTextWithGPT } from '../config/openai-setup';
-import User, {  IUser } from '../models/User';
-import { getGithubAuthUrl } from '../utils/authHelpers'; 
-// import { getCustomSessionProperty } from '../utils/sessionUtils';
+import { User } from '../models/User';
+import { getGithubAuthUrl } from '../utils/authHelpers'; // Ensure this utility function is implemented
+// import router from '.';
+import { getCustomSessionProperty } from '../utils/sessionUtils';
 
 
 // Define an interface for GitHub API errors, as they typically have a status code.
@@ -24,7 +25,7 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
   }
 
   const [, owner, repo] = match;
-  const accessToken = req.user ? (req.user as IUser).accessToken : process.env.GITHUB_PAT;
+  const accessToken = req.user ? (req.user as User).accessToken : process.env.GITHUB_PAT;
 
   // Function to attempt repository access
   const attemptAccess = async (token: string) => {
@@ -33,7 +34,8 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
   };
 
   try {
-    const repoDetails = await attemptAccess(accessToken || ''); // Provide a default value of an empty string if accessToken is undefined
+    // First attempt with PAT or an empty string
+    const repoDetails = accessToken ? await attemptAccess(accessToken) : null;
     const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
     const analysisResult = await analyzeTextWithGPT(promptText);
     console.log('Analysis Result:', analysisResult);

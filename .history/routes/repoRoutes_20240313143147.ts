@@ -33,7 +33,9 @@ const analyzeGithubUrl = async (req: Request, res: Response) => {
   };
 
   try {
-    const repoDetails = await attemptAccess(accessToken || ''); // Provide a default value of an empty string if accessToken is undefined
+    // First attempt with PAT or an empty string
+    // const repoDetails = accessToken ? await attemptAccess(accessToken)  : null;
+    const repoDetails = await attemptAccess(accessToken);
     const promptText = `Analyze the GitHub repository "${owner}/${repo}" and provide a summary of its main features, technologies used, and overall purpose.`;
     const analysisResult = await analyzeTextWithGPT(promptText);
     console.log('Analysis Result:', analysisResult);

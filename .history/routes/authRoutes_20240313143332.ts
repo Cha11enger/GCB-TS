@@ -20,7 +20,7 @@ passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID as string,
     clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback"
-}, async (accessToken: string, _refreshToken: string, profile: Profile, cb: (error: any, user?: any) => void) => {
+}, async (accessToken: string, refreshToken: string, profile: Profile, cb: (error: any, user?: any) => void) => {
     // Cast profile to ExtendedGitHubProfile to access the _json property
     const githubProfile = profile as ExtendedGitHubProfile;
   try {
