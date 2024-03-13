@@ -26,26 +26,7 @@ passport.use(new GitHubStrategy({
     
     try {
         let user = await User.findOne({ githubId: profile.id });
-        if (!user) {
-          user = await User.create({
-              githubId: profile.id,
-              accessToken,
-              displayName: profile.displayName || githubProfile._json.login,
-              username: githubProfile._json.login,
-              profileUrl: githubProfile._json.html_url,
-              avatarUrl: githubProfile._json.avatar_url,
-          });
-      } else {
-          user.accessToken = accessToken; // Update access token for existing users
-          await user.save();
-      }
-      console.log("User saved:", user);
-      cb(null, user);
-  } catch (error) {
-      console.error("Error saving user:", error);
-      cb(error);
-  }
-}));
+        
 
         //working proper upto auth 
 //         if (user) {
