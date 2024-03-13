@@ -22,6 +22,20 @@ router.get('/github', (req, res) => {
 });
 
 // GitHub OAuth callback
+// router.get('/github/callback', async (req, res) => {
+//     const { code, state } = req.query;
+//     const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
+
+//     if (!code) {
+//         console.error('GitHub callback did not provide a code.');
+//         return res.redirect(`${openaiCallbackUrl}?error=missing_code&state=${state}`);
+//     }
+
+//     // Here, we directly redirect to the OpenAI callback URL with the code and state
+//     // This is assuming your frontend or another process will handle the code exchange
+//     res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+// });
+
 router.get('/github/callback', async (req, res) => {
   const { code, state } = req.query;
   const openaiCallbackUrl = process.env.OPENAI_CALLBACK_URL;
@@ -56,12 +70,16 @@ router.get('/github/callback', async (req, res) => {
       (req.session as any).user = user;
 
       // Redirect with proper code and state
-      res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+        res.redirect(`${openaiCallbackUrl}?code=${code}&state=${state}`);
+      // res.redirect(`${openaiCallbackUrl}?success=true&state=${state}&userId=${user._id}`);
   } catch (error) {
       console.error('Error during GitHub OAuth process:', error);
-      res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+      // res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+        res.redirect(`${openaiCallbackUrl}?error=authorization_failed&state=${state}`);
+
   }
 });
+
 
 // Function to exchange code for an access token
 async function exchangeCodeForToken(code: string): Promise<string> {
@@ -87,13 +105,6 @@ async function exchangeCodeForToken(code: string): Promise<string> {
   if (!response.ok || data.error) {
       throw new Error(data.error_description || 'Failed to exchange code for token.');
   }
-
-  // Additional safety check for the response Content-Type
-  const contentType = response.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-      throw new TypeError("Oops, we haven't got JSON!");
-  }
-
   return data.access_token;
 }
 
@@ -114,6 +125,7 @@ async function fetchGitHubUserData(accessToken: string): Promise<any> {
 
 // Endpoint to exchange GitHub code for access token and fetch user data
 router.post('/github/token', async (req, res) => {
+  console.log("Received token exchange request", req.body);
   const { code } = req.body;
   if (!code) {
       return res.status(400).json({ error: 'Code is required' });
