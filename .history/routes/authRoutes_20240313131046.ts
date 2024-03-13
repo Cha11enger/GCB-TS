@@ -1,33 +1,33 @@
 // authRoutes.ts
-
-import fetch from 'node-fetch';
-// import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
-import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
-import express from 'express';
 import passport from 'passport';
+import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
+// import { Request, Response } from 'express';
+import fetch from 'node-fetch';
 import User, { IUser } from '../models/User';
+// import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
+import express from 'express';
 
 const router = express.Router();
 
 passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID!,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-  callbackURL: process.env.GITHUB_CALLBACK_URL!,
+  clientID: process.env.GITHUB_CLIENT_ID as string,
+  clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+  callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
 },
-async (accessToken, refreshToken, profile, cb) => {
+async (accessToken: string, refreshToken: string, profile: Profile, cb: any) => {
   try {
-    // Safely access _json property
-    const extendedProfile = profile as Profile & { _json: { html_url?: string, avatar_url?: string } };
-    let user: IUser | null = await User.findOne({ githubId: profile.id });
+    const extendedProfile = profile as Profile & { _json: any }; 
+    const { id, displayName, username, photos } = profile;
+    let user = await User.findOne({ githubId: id });
 
     if (!user) {
-      user = new User({
-        githubId: profile.id,
+      user = await User.create({
+        githubId: id,
         accessToken,
-        displayName: profile.displayName,
-        username: profile.username,
-        profileUrl: extendedProfile._json.html_url || '',
-        avatarUrl: extendedProfile._json.avatar_url || '',
+        displayName,
+        username,
+        profileUrl: profile.profileUrl, // Adjust accordingly
+        avatarUrl: photos?.[0]?.value ?? null, // Assuming photos array is not empty
       });
     } else {
       user.accessToken = accessToken;
@@ -41,47 +41,13 @@ async (accessToken, refreshToken, profile, cb) => {
 }
 ));
 
-// const router = express.Router();
-
-// passport.use(new GitHubStrategy({
-//   clientID: process.env.GITHUB_CLIENT_ID as string,
-//   clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-//   callbackURL: "https://gcb-ts.onrender.com/api/auth/github/callback",
-// },
-// async (accessToken: string, refreshToken: string, profile: Profile, cb: any) => {
-//   try {
-//     const extendedProfile = profile as Profile & { _json: any }; 
-//     const { id, displayName, username, photos } = profile;
-//     let user = await User.findOne({ githubId: id });
-
-//     if (!user) {
-//       user = await User.create({
-//         githubId: id,
-//         accessToken,
-//         displayName,
-//         username,
-//         profileUrl: profile.profileUrl, // Adjust accordingly
-//         avatarUrl: photos?.[0]?.value ?? null, // Assuming photos array is not empty
-//       });
-//     } else {
-//       user.accessToken = accessToken;
-//       await user.save();
-//     }
-
-//     cb(null, user);
-//   } catch (error) {
-//     cb(error);
-//   }
-// }
-// ));
-
 // Correctly typing serializeUser and deserializeUser functions
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+passport.serializeUser((user: IUser, done) => {
+  done(null, user.id); // Assuming user.id is how you access the ID.
 });
 
-passport.deserializeUser((id: any, done) => {
-  User.findById(id, (err: any, user: any) => { // Assuming `User` is your Mongoose model
+passport.deserializeUser((id: string, done) => {
+  User.findById(id, (err: any, user: IUser) => {
     done(err, user);
   });
 });

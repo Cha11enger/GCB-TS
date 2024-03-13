@@ -10,35 +10,31 @@ import User, { IUser } from '../models/User';
 const router = express.Router();
 
 passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID!,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-  callbackURL: process.env.GITHUB_CALLBACK_URL!,
-},
-async (accessToken, refreshToken, profile, cb) => {
-  try {
-    // Safely access _json property
-    const extendedProfile = profile as Profile & { _json: { html_url?: string, avatar_url?: string } };
-    let user: IUser | null = await User.findOne({ githubId: profile.id });
-
-    if (!user) {
-      user = new User({
-        githubId: profile.id,
-        accessToken,
-        displayName: profile.displayName,
-        username: profile.username,
-        profileUrl: extendedProfile._json.html_url || '',
-        avatarUrl: extendedProfile._json.avatar_url || '',
-      });
-    } else {
-      user.accessToken = accessToken;
+    clientID: process.env.GITHUB_CLIENT_ID as string,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    callbackURL: process.env.GITHUB_CALLBACK_URL,
+  },
+  async (accessToken: string, refreshToken: string, profile: Profile, cb: (error: any, user?: any) => void) => {
+    try {
+      let user: IUser | null = await User.findOne({ githubId: profile.id });
+      if (!user) {
+        user = new User({
+          githubId: profile.id,
+          accessToken,
+          displayName: profile.displayName,
+          username: profile.username,
+          profileUrl: profile._json.html_url,
+          avatarUrl: profile._json.avatar_url,
+        });
+      } else {
+        user.accessToken = accessToken;
+      }
       await user.save();
+      cb(null, user);
+    } catch (error) {
+      cb(error);
     }
-
-    cb(null, user);
-  } catch (error) {
-    cb(error);
   }
-}
 ));
 
 // const router = express.Router();

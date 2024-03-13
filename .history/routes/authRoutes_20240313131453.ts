@@ -1,45 +1,12 @@
 // authRoutes.ts
-
-import fetch from 'node-fetch';
-// import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
-import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
-import express from 'express';
 import passport from 'passport';
+import { Strategy as GitHubStrategy, Profile } from 'passport-github2';
+import fetch from 'node-fetch';
 import User, { IUser } from '../models/User';
+// import { setCustomSessionProperty, getCustomSessionProperty } from '../utils/sessionUtils';
+import express from 'express';
 
-const router = express.Router();
 
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID!,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-  callbackURL: process.env.GITHUB_CALLBACK_URL!,
-},
-async (accessToken, refreshToken, profile, cb) => {
-  try {
-    // Safely access _json property
-    const extendedProfile = profile as Profile & { _json: { html_url?: string, avatar_url?: string } };
-    let user: IUser | null = await User.findOne({ githubId: profile.id });
-
-    if (!user) {
-      user = new User({
-        githubId: profile.id,
-        accessToken,
-        displayName: profile.displayName,
-        username: profile.username,
-        profileUrl: extendedProfile._json.html_url || '',
-        avatarUrl: extendedProfile._json.avatar_url || '',
-      });
-    } else {
-      user.accessToken = accessToken;
-      await user.save();
-    }
-
-    cb(null, user);
-  } catch (error) {
-    cb(error);
-  }
-}
-));
 
 // const router = express.Router();
 
