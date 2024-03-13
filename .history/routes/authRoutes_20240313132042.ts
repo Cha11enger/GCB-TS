@@ -14,7 +14,7 @@ passport.use(new GitHubStrategy({
   clientSecret: process.env.GITHUB_CLIENT_SECRET! as string,
   callbackURL: process.env.GITHUB_CALLBACK_URL! as string,
 },
-async (accessToken: string, _refreshToken: string, profile: Profile, cb: any) => {
+async (accessToken: string, refreshToken: string, profile: Profile, cb: any) => {
   try {
     // Safely access _json property
     const extendedProfile = profile as Profile & { _json: { html_url?: string, avatar_url?: string } };
