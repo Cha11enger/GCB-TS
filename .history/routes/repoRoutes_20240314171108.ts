@@ -68,7 +68,7 @@ router.post('/analyze', async (req: Request, res: Response) => {
       return res.json(result);
     }
     console.log('Prompting for authentication');
-    return getGithubAuthUrl();
+    return promptForAuthentication(res);
   }
 
   // Try using user's access token

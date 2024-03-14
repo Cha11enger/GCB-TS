@@ -68,7 +68,7 @@ router.post('/analyze', async (req: Request, res: Response) => {
       return res.json(result);
     }
     console.log('Prompting for authentication');
-    return getGithubAuthUrl();
+    return promptForAuthentication(res);
   }
 
   // Try using user's access token
@@ -84,7 +84,7 @@ router.post('/analyze', async (req: Request, res: Response) => {
 
   // Prompt for authentication if all else fails
   console.log('Prompting for authentication');
-  return getGithubAuthUrl();
+  promptForAuthentication(res);
 });
 
 // Retrieve the user's access token from session, database, or callback URL
