@@ -20,10 +20,8 @@ router.post('/analyze', async (req: Request, res: Response) => {
 
   const [, owner, repo] = match;
   try {
-    // Ensure that the GITHUB_PAT environment variable is defined
-    const githubPat = process.env.GITHUB_PAT || '';
     // Attempt to analyze the repository with the PAT
-    await analyzeRepository(owner, repo, githubPat, res);
+    await analyzeRepository(owner, repo, process.env.GITHUB_PAT, res);
   } catch (error) {
     // If failed with the PAT, attempt with the user's access token
     const accessToken = await getUserAccessToken(req);
@@ -57,26 +55,11 @@ async function analyzeRepository(owner: string, repo: string, token: string, res
   }
 }
 
-// Attempt to retrieve the user's access token from the session or database
+// Retrieve the user's access token from session or database
 async function getUserAccessToken(req: Request): Promise<string | null> {
-  // First, try to get the accessToken from the session
-  let accessToken = (req.session as any)?.user?.accessToken || null;
-
-  if (!accessToken) {
-    // If there's no accessToken in the session, try to retrieve it from the database
-    // Assuming you have a way to identify the user (e.g., GitHub ID or username) in your session or request
-    const userIdentification = (req.session as any)?.user?.githubId || req.query.userId; // Example identifiers
-    
-    if (userIdentification) {
-      const user = await User.findOne({ githubId: userIdentification }).exec(); // Adjust query as needed
-
-      if (user && user.accessToken) {
-        accessToken = user.accessToken;
-      }
-    }
-  }
-
-  return accessToken;
+  // Example: Retrieve from session
+  // Note: Implement the logic to retrieve the access token as per your application's session management or database schema
+  return req.session?.user?.accessToken || null;
 }
 
 // Handle errors related to repository access
