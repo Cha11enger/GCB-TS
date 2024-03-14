@@ -1,4 +1,3 @@
-// routes/authRoutes.ts
 import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -69,20 +68,20 @@ router.get('/github/callback', async (req, res) => {
 
       // Save or update user in the database
       let user = await User.findOne({ githubId: userData.id }).exec();
-        if (!user) {
+      if (!user) {
           user = new User({
-            githubId: userData.id,
-            accessToken: accessTokenData.access_token,
-            displayName: userData.name || '',
-            username: userData.login,
-            profileUrl: userData.html_url,
-            avatarUrl: userData.avatar_url,
-            state: state?.toString() || '', // Fix: Add nullish coalescing operator to provide a default value
-            code: code.toString(),
+              githubId: userData.id,
+              accessToken: accessTokenData.access_token,
+              displayName: userData.name || '',
+              username: userData.login,
+              profileUrl: userData.html_url,
+              avatarUrl: userData.avatar_url,
+              state: state.toString(),
+              code: code.toString(),
           });
-        } else {
+      } else {
           user.accessToken = accessTokenData.access_token; // Update the access token
-          user.state = state?.toString();
+          user.state = state.toString();
           user.code = code.toString();
       }
       await user.save();

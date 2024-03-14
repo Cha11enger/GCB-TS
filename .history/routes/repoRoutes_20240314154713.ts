@@ -30,8 +30,7 @@ const analyzeRepository = async (owner: string, repo: string, token: string) => 
     return { success: true, repoDetails, analysisResult };
   } catch (error) {
     console.error('Failed to fetch repository details:', error);
-    return { success: false, error: "Failed to fetch repository details." };
-
+    return { success: false, error: error.message };
   }
 };
 
@@ -84,8 +83,13 @@ async function getUserAccessToken(req: CustomRequest): Promise<string | null> {
   // Additional logic for direct retrieval post-authentication
   if (req.session && req.session.accessToken) {
     const temporaryAccessToken: string = req.session.accessToken;
+    // Here you could either return this temporary token directly,
+    // or consider if it needs to be validated or refreshed before use.
     return temporaryAccessToken;
   }
+
+  // Insert additional retrieval methods here as necessary, but be mindful of security implications
+  // E.g., retrieving from a secure, HttpOnly cookie if set after authentication
 
   return null; // Return null if no access token is found
 }

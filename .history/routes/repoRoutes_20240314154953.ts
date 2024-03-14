@@ -30,8 +30,7 @@ const analyzeRepository = async (owner: string, repo: string, token: string) => 
     return { success: true, repoDetails, analysisResult };
   } catch (error) {
     console.error('Failed to fetch repository details:', error);
-    return { success: false, error: "Failed to fetch repository details." };
-
+    
   }
 };
 

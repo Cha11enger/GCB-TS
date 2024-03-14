@@ -6,14 +6,13 @@ import dotenv from 'dotenv';
 import { analyzeTextWithGPT } from '../config/openai-setup'; // Importing OpenAI setup for analysis
 import { Session } from 'express-session';
 import User, { IUser } from '../models/User'; // Adjust path as necessary
-// import { Session } from 'express-session';
 
 dotenv.config();
 
 const router = express.Router();
 
 interface CustomRequest extends Request {
-  session: Session & {
+  session?: Express.Session & {
     userId?: string;
     accessToken?: string; // Assuming the temporary storage of accessToken in session after auth callback
   };
@@ -30,8 +29,7 @@ const analyzeRepository = async (owner: string, repo: string, token: string) => 
     return { success: true, repoDetails, analysisResult };
   } catch (error) {
     console.error('Failed to fetch repository details:', error);
-    return { success: false, error: "Failed to fetch repository details." };
-
+    return { success: false, error: error.message };
   }
 };
 
@@ -68,26 +66,17 @@ router.post('/analyze', async (req: Request, res: Response) => {
 });
 
 // Retrieve the user's access token from session, database, or callback URL
-async function getUserAccessToken(req: CustomRequest): Promise<string | null> {
-  // Attempt to retrieve from session first
-  if (req.session && req.session.userId) {
-    try {
-      const user: IUser | null = await User.findById(req.session.userId).exec();
-      if (user && user.accessToken) {
-        return user.accessToken;
-      }
-    } catch (error) {
-      console.error('Error fetching user from DB:', error);
+async function getUserAccessToken(req: Request): Promise<string | null> {
+  const session = req.session as Session & { userId?: string }; // Update the type definition for the session object
+  const userId = session.userId; // Assuming session storage of userId
+  if (userId) {
+    const user = await User.findById(userId).exec();
+    if (user && user.accessToken) {
+      return user.accessToken;
     }
   }
-  
-  // Additional logic for direct retrieval post-authentication
-  if (req.session && req.session.accessToken) {
-    const temporaryAccessToken: string = req.session.accessToken;
-    return temporaryAccessToken;
-  }
-
-  return null; // Return null if no access token is found
+  // Implement additional logic here if needed, e.g., handling callback URL
+  return null;
 }
 
 // Function to prompt for user authentication

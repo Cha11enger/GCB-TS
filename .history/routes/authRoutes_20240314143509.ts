@@ -1,4 +1,3 @@
-// routes/authRoutes.ts
 import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
@@ -82,7 +81,7 @@ router.get('/github/callback', async (req, res) => {
           });
         } else {
           user.accessToken = accessTokenData.access_token; // Update the access token
-          user.state = state?.toString();
+          user.state = state.toString();
           user.code = code.toString();
       }
       await user.save();
