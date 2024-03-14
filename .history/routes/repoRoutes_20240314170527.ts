@@ -118,7 +118,7 @@ function promptForAuthentication(res: Response) {
   res.status(403).json({
     error: "Authentication required. Please authenticate to access this repository.",
     // authUrl: `${process.env.SERVER_URL}/api/auth/github`
-    authUrl: getGithubAuthUrl()
+    authUrl: getGithubAuthUrl();
   });
 }
 

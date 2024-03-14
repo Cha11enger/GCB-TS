@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { analyzeTextWithGPT } from '../config/openai-setup'; // Importing OpenAI setup for analysis
 import { Session } from 'express-session';
 import User, { IUser } from '../models/User'; // Adjust path as necessary
-import { getGithubAuthUrl } from '../utils/authHelpers'; // Importing the helper function to generate GitHub OAuth URL
+import getGithubAuthUrl from '../utils/authHelpers'; // Importing the helper function to generate GitHub OAuth URL
 
 // routes/repoRoutes.ts
 // import User from '../models/User'; // Adjust this import as necessary
@@ -118,7 +118,7 @@ function promptForAuthentication(res: Response) {
   res.status(403).json({
     error: "Authentication required. Please authenticate to access this repository.",
     // authUrl: `${process.env.SERVER_URL}/api/auth/github`
-    authUrl: getGithubAuthUrl()
+    authUrl: 
   });
 }
 
