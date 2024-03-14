@@ -14,7 +14,7 @@ const router = express.Router();
 
 interface CustomRequest extends Request {
   session: Session & {
-    githubId?: string;
+    userId?: string;
     accessToken?: string; // Assuming the temporary storage of accessToken in session after auth callback
   };
 }

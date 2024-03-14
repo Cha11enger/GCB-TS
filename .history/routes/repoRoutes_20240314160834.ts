@@ -14,7 +14,7 @@ const router = express.Router();
 
 interface CustomRequest extends Request {
   session: Session & {
-    githubId?: string;
+    userId?: string;
     accessToken?: string; // Assuming the temporary storage of accessToken in session after auth callback
   };
 }
@@ -70,9 +70,9 @@ router.post('/analyze', async (req: Request, res: Response) => {
 // Retrieve the user's access token from session, database, or callback URL
 async function getUserAccessToken(req: CustomRequest): Promise<string | null> {
   // Attempt to retrieve from session first
-  if (req.session && req.session.githubId) {
+  if (req.session && req.session.userId) {
     try {
-      const user: IUser | null = await User.findById(req.session.githubId).exec();
+      const user: IUser | null = await User.findById(req.session.userId).exec();
       if (user && user.accessToken) {
         return user.accessToken;
       }
